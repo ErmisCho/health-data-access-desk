@@ -4,6 +4,19 @@ export { SAMPLE_ENTRIES, type AccessRequest } from "./requests";
 export type Decision = "REJECT" | "APPROVE_STATISTICAL" | "APPROVE_SPE";
 export type AnswerValue = number | string;
 export type Answer = { [key: string]: AnswerValue | Answer };
+export interface LegalArticle {
+  number: string;
+  title: string;
+  summary: string;
+  quote: string;
+  ref: string;
+}
+export interface DecisionExplanation {
+  rule: string;
+  trigger_phrases: string[];
+  articles: LegalArticle[];
+  plan_summary?: string;
+}
 export interface DecisionResult {
   request_id: string;
   decision: Decision;
@@ -13,6 +26,8 @@ export interface DecisionResult {
   needs_review?: boolean;
   spe_schema?: string;
   parse_errors?: { definition: string; reason: string }[];
+  explanation?: DecisionExplanation;
+  population?: { eligible_patients: number };
 }
 export interface RequestSummary {
   request_id: string;

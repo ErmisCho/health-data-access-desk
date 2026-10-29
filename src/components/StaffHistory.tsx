@@ -2,6 +2,10 @@ import { useEffect, useState } from "react";
 import { getRequest, listRequests, type DecisionResult, type RequestHistory } from "@/lib/ehds";
 import { DecisionDetails } from "./DecisionDetails";
 
+import { DecisionBadge } from "./DecisionBadge";
+import { DataTable } from "./DataTable";
+import { EmptyState, ErrorState } from "./States";
+
 export function StaffHistory() {
   const [history, setHistory] = useState<RequestHistory | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -68,24 +72,31 @@ export function StaffHistory() {
           Loading history…
         </p>
       )}
-      {error && (
-        <p role="alert" className="mt-4 text-destructive">
-          Could not load history: {error}
-        </p>
-      )}
+      {error && <ErrorState>Could not load history: {error}</ErrorState>}
       {history && (
         <>
-          <div className="mt-4 overflow-x-auto rounded border border-border bg-card">
-            <table className="w-full text-left text-sm">
-              <caption className="sr-only">Submission history</caption>
+          <div className="mt-4">
+            <DataTable caption="Submission history">
               <thead>
                 <tr>
-                  <th className="p-3">Request</th>
-                  <th className="p-3">Saved at</th>
-                  <th className="p-3">Decision</th>
-                  <th className="p-3">Review</th>
-                  <th className="p-3">Secure environment</th>
-                  <th className="p-3">Result</th>
+                  <th scope="col" className="p-3">
+                    Request
+                  </th>
+                  <th scope="col" className="p-3">
+                    Saved at
+                  </th>
+                  <th scope="col" className="p-3">
+                    Decision
+                  </th>
+                  <th scope="col" className="p-3">
+                    Review
+                  </th>
+                  <th scope="col" className="p-3">
+                    Secure environment
+                  </th>
+                  <th scope="col" className="p-3">
+                    Result
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -98,7 +109,9 @@ export function StaffHistory() {
                       {row.request_id}
                     </th>
                     <td className="p-3">{row.submitted_at}</td>
-                    <td className="p-3">{row.decision}</td>
+                    <td className="p-3">
+                      <DecisionBadge decision={row.decision} />
+                    </td>
                     <td className="p-3">
                       {row.needs_review ? "Needs staff review" : "No review needed"}
                     </td>
@@ -119,9 +132,9 @@ export function StaffHistory() {
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </DataTable>
           </div>
-          {!history.requests.length && <p className="mt-4">No saved requests.</p>}
+          {!history.requests.length && <EmptyState title="No saved requests." />}
           {selectedId && (
             <article className="mt-6 rounded border border-border bg-card p-6">
               <h3 className="font-semibold">Latest saved result — {selectedId}</h3>
@@ -129,9 +142,7 @@ export function StaffHistory() {
                 For repeated request IDs, this shows the most recent saved response.
               </p>
               {detailError ? (
-                <p role="alert" className="mt-4 text-destructive">
-                  Could not load saved result: {detailError}
-                </p>
+                <ErrorState>Could not load saved result: {detailError}</ErrorState>
               ) : result && result.request_id === selectedId ? (
                 <DecisionDetails
                   key={selectedId}
@@ -148,14 +159,19 @@ export function StaffHistory() {
           )}
           <h3 className="mt-8 font-display text-xl font-semibold">Blocked-download log</h3>
           {history.downloads.length ? (
-            <div className="mt-3 overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <caption className="sr-only">Blocked download attempts</caption>
+            <div className="mt-3">
+              <DataTable caption="Blocked download attempts">
                 <thead>
                   <tr>
-                    <th className="p-3">Request</th>
-                    <th className="p-3">Attempted at</th>
-                    <th className="p-3">Status</th>
+                    <th scope="col" className="p-3">
+                      Request
+                    </th>
+                    <th scope="col" className="p-3">
+                      Attempted at
+                    </th>
+                    <th scope="col" className="p-3">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -172,10 +188,10 @@ export function StaffHistory() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </DataTable>
             </div>
           ) : (
-            <p className="mt-3">No blocked-download attempts recorded.</p>
+            <EmptyState title="No blocked-download attempts recorded." />
           )}
         </>
       )}

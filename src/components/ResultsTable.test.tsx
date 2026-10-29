@@ -13,10 +13,10 @@ it("Yes/No toggle hides and restores percentage headers and cells", () => {
   expect(screen.getByRole("columnheader", { name: "Prevalence pct" })).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText("Show percentage columns"), { target: { value: "no" } });
   expect(screen.queryByRole("columnheader", { name: "Prevalence pct" })).not.toBeInTheDocument();
-  expect(screen.queryByText("8.1")).not.toBeInTheDocument();
+  expect(screen.queryByText("8.1 %")).not.toBeInTheDocument();
   expect(screen.getByText("30")).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText("Show percentage columns"), { target: { value: "yes" } });
-  expect(screen.getByText("8.1")).toBeInTheDocument();
+  expect(screen.getByText("8.1 %")).toBeInTheDocument();
 });
 it("staff see schema and the real download refusal; applicants see cohort and review", async () => {
   const result = {

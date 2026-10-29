@@ -4,6 +4,8 @@ import { SAMPLE_ENTRIES, submitRequest, type DecisionResult } from "@/lib/ehds";
 import { StaffHistory } from "@/components/StaffHistory";
 import { DecisionDetails } from "@/components/DecisionDetails";
 
+import { EmptyState, ErrorState } from "@/components/States";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
@@ -23,9 +25,9 @@ function Index() {
   return (
     <div className="min-h-screen font-sans">
       <header className="border-b border-border bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-5">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
           <div>
-            <p className="font-mono text-xs uppercase tracking-widest opacity-70">
+            <p className="font-mono text-xs uppercase tracking-widest">
               Health Data Access Body · EHDS
             </p>
             <h1 className="font-display text-3xl font-bold">EHDS Access Desk</h1>
@@ -39,7 +41,7 @@ function Index() {
                 key={r}
                 aria-pressed={role === r}
                 onClick={() => setRole(r)}
-                className={`rounded px-4 py-1.5 text-sm font-medium capitalize ${role === r ? "bg-accent text-accent-foreground" : "opacity-80 hover:opacity-100"}`}
+                className={`rounded px-4 py-1.5 text-sm font-medium capitalize ${role === r ? "bg-accent text-accent-foreground" : "hover:bg-primary-foreground/10"}`}
               >
                 {r}
               </button>
@@ -83,7 +85,7 @@ function Applicant() {
   }
   return (
     <div className="grid gap-8 lg:grid-cols-2">
-      <section>
+      <section className="min-w-0">
         <h2 className="font-display text-2xl font-semibold">Data access request</h2>
         <label className="mt-4 block text-sm text-muted-foreground">
           Sample request
@@ -113,11 +115,7 @@ function Applicant() {
           }}
           className="mt-4 h-80 w-full rounded border border-input bg-card p-3 font-mono text-sm"
         />
-        {error && (
-          <p role="alert" className="mt-2 text-sm text-destructive">
-            {error}
-          </p>
-        )}
+        {error && <ErrorState>{error}</ErrorState>}
         <button
           onClick={submit}
           disabled={busy}
@@ -131,9 +129,9 @@ function Applicant() {
         {result ? (
           <DecisionDetails key={JSON.stringify(result)} result={result} />
         ) : (
-          <p className="mt-4 text-muted-foreground">
-            {busy ? "Evaluating request…" : "Submit a request to see the HDAB decision."}
-          </p>
+          <EmptyState
+            title={busy ? "Evaluating request…" : "Submit a request to see the HDAB decision."}
+          />
         )}
       </section>
     </div>

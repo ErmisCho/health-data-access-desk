@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { downloadRequest, type Decision, type DecisionResult } from "@/lib/ehds";
+import { downloadRequest, type DecisionResult } from "@/lib/ehds";
 import { ResultsTable } from "./ResultsTable";
 
-const decisionStyle: Record<Decision, string> = {
-  REJECT: "bg-destructive text-destructive-foreground",
-  APPROVE_STATISTICAL: "bg-success text-success-foreground",
-  APPROVE_SPE: "bg-info text-info-foreground",
-};
+import { DecisionBadge } from "./DecisionBadge";
+import { LifecycleStepper } from "./LifecycleStepper";
+import { ExplanationPanel } from "./ExplanationPanel";
+import { ErrorState } from "./States";
+
 export function DecisionDetails({
   result,
   staff = false,
@@ -32,11 +32,11 @@ export function DecisionDetails({
   }
   return (
     <div className="mt-4 space-y-4">
-      <span
-        className={`inline-block rounded px-2 py-0.5 font-mono text-xs font-semibold ${decisionStyle[result.decision]}`}
-      >
-        {result.decision}
-      </span>
+      <DecisionBadge decision={result.decision} />
+      <LifecycleStepper
+        current={result.needs_review ? "Staff review" : "Decided"}
+        needsReview={!!result.needs_review}
+      />
       {result.needs_review && (
         <p className="font-semibold" role="status">
           Needs staff review
@@ -59,6 +59,13 @@ export function DecisionDetails({
         <p className="text-xs uppercase tracking-wider text-muted-foreground">Reason</p>
         <p className="mt-1">{result.reason}</p>
       </div>
+      {result.explanation && <ExplanationPanel explanation={result.explanation} />}
+      {result.population && (
+        <p>
+          Eligible patients:{" "}
+          <span className="font-mono">{result.population.eligible_patients}</span>
+        </p>
+      )}
       {result.parse_errors?.length ? (
         <div>
           <p className="font-semibold">Definitions needing review</p>
@@ -100,11 +107,7 @@ export function DecisionDetails({
               >
                 {busy ? "Checking…" : "Download"}
               </button>
-              {message && (
-                <p role="alert" className="mt-2 text-sm text-destructive">
-                  {message}
-                </p>
-              )}
+              {message && <ErrorState>{message}</ErrorState>}
             </>
           ) : (
             <p className="mt-1">
