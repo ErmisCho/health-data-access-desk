@@ -3,6 +3,7 @@ import { useState } from "react";
 import { SAMPLE_ENTRIES, submitRequest, type DecisionResult } from "@/lib/ehds";
 import { StaffHistory } from "@/components/StaffHistory";
 import { DecisionDetails } from "@/components/DecisionDetails";
+import { DemoPanel } from "@/components/DemoPanel";
 
 import { EmptyState, ErrorState } from "@/components/States";
 
@@ -21,7 +22,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const [role, setRole] = useState<"applicant" | "staff">("applicant");
+  const [role, setRole] = useState<"applicant" | "staff" | "demo">("applicant");
   return (
     <div className="min-h-screen font-sans">
       <header className="border-b border-border bg-primary text-primary-foreground">
@@ -36,7 +37,7 @@ function Index() {
             className="flex rounded border border-primary-foreground/30 p-1"
             aria-label="View role"
           >
-            {(["applicant", "staff"] as const).map((r) => (
+            {(["applicant", "staff", "demo"] as const).map((r) => (
               <button
                 key={r}
                 aria-pressed={role === r}
@@ -54,6 +55,7 @@ function Index() {
           <Applicant />
         </div>
         {role === "staff" && <StaffHistory />}
+        {role === "demo" && <DemoPanel />}
       </main>
     </div>
   );
