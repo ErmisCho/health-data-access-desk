@@ -1,176 +1,156 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-// Mock the Supabase client before importing ehds so the module-level import resolves to the mock.
-vi.mock("@/integrations/supabase/client", () => ({
-  supabase: {
-    functions: {
-      invoke: vi.fn(),
-    },
-  },
-}));
-
+vi.mock("@/integrations/supabase/client", () => ({ supabase: { functions: { invoke: vi.fn() } } }));
 import { supabase } from "@/integrations/supabase/client";
 import {
-  decide,
   downloadRequest,
+  listRequests,
+  getRequest,
   mapEdgeResponse,
-  R07_REQUEST,
   SAMPLE_ENTRIES,
-  SAMPLES,
   submitRequest,
+  type DecisionResult,
 } from "./ehds";
-
-const invokeMock = supabase.functions.invoke as ReturnType<typeof vi.fn>;
-
-const s = (id: string) => SAMPLES.find((r) => r.id === id)!;
-
-// ─── existing decision tests ────────────────────────────────────────────────
-describe("EHDS decisions", () => {
-  it("rejects prohibited purposes under Art. 54", () => {
-    const r = decide(s("REQ-002"));
-    expect(r.decision).toBe("REJECT");
-    expect(r.articles).toContain("Art. 54");
-  });
-  it("approves aggregated research as statistical", () => {
-    expect(decide(s("REQ-001")).decision).toBe("APPROVE_STATISTICAL");
-  });
-  it("routes individual-level data to the SPE", () => {
-    expect(decide(s("REQ-003")).decision).toBe("APPROVE_SPE");
-  });
-  it("rejects aggregated output with cell size below 10", () => {
-    expect(decide(s("REQ-007")).decision).toBe("REJECT");
-  });
-  it("blocks downloads with 403", async () => {
-    expect((await downloadRequest("REQ-001")).status).toBe(403);
+const invoke = vi.mocked(supabase.functions.invoke);
+const statistical: DecisionResult = {
+  request_id: "R01",
+  decision: "APPROVE_STATISTICAL",
+  articles: ["53", "Art. 69"],
+  reason: "Allowed",
+  answer: { Wien: { adults: 30, prevalence_pct: 10 } },
+};
+const httpError = (status: number, message: string) => ({
+  data: null,
+  error: {
+    message: "Function error",
+    context: new Response(JSON.stringify({ error: message, request_id: "R05" }), { status }),
+  },
+});
+beforeEach(() => vi.resetAllMocks());
+describe("Track 3 requests", () => {
+  it("offers exactly R01–R10 with R01 first and the real request format", () => {
+    expect(SAMPLE_ENTRIES.map((s) => s.id)).toEqual(
+      Array.from({ length: 10 }, (_, i) => `R${String(i + 1).padStart(2, "0")}`),
+    );
+    expect(SAMPLE_ENTRIES[0]!.request.applicant.name).toBe("Dr. Sophie Lechner");
+    expect(
+      SAMPLE_ENTRIES.every(
+        (s) => s.label.startsWith(`${s.id} — `) && s.request.definitions.length > 0,
+      ),
+    ).toBe(true);
   });
 });
-
-// ─── mapEdgeResponse ─────────────────────────────────────────────────────────
-describe("mapEdgeResponse", () => {
-  const R07_EDGE_PAYLOAD = {
-    request_id: "R07",
-    decision: "APPROVE_STATISTICAL" as const,
-    articles: ["53", "69"],
-    reason: "Official statistics are an allowed purpose (Art. 53). Statistics answer the question (Art. 69).",
-    answer: {
-      Burgenland: 28,
-      Kärnten: 69,
-      Niederösterreich: 187,
-      Oberösterreich: 194,
-      Salzburg: 69,
-      Steiermark: 140,
-      Tirol: 86,
-      Vorarlberg: 61,
-      Wien: 245,
+describe("responses and submission", () => {
+  it("preserves grouped answers and normalises articles", () => {
+    expect(mapEdgeResponse(statistical)).toEqual({
+      ...statistical,
+      articles: ["Art. 53", "Art. 69"],
+    });
+  });
+  it("preserves null rejections, SPE cohort, schema and review flag", () => {
+    expect(mapEdgeResponse({ ...statistical, decision: "REJECT", answer: null }).answer).toBeNull();
+    const spe = {
+      ...statistical,
+      decision: "APPROVE_SPE" as const,
+      answer: { cohort_size: 22 },
+      spe_schema: "spe_r05",
+      needs_review: true,
+    };
+    expect(mapEdgeResponse(spe)).toMatchObject({ ...spe, articles: ["Art. 53", "Art. 69"] });
+  });
+  it("returns only the live response for a sample or minimal custom request", async () => {
+    invoke.mockResolvedValue({ data: statistical, error: null });
+    const request = SAMPLE_ENTRIES[0]!.request;
+    expect(await submitRequest(request)).toEqual(mapEdgeResponse(statistical));
+    expect(invoke).toHaveBeenCalledWith("requests", { body: request });
+    const custom = { id: "custom", requested_as: "health data request", purpose: "Research" };
+    await submitRequest(custom);
+    expect(invoke).toHaveBeenLastCalledWith("requests", { body: custom });
+  });
+  it.each([400, 401, 403, 500, 501])(
+    "surfaces HTTP %i without fabricated results",
+    async (status) => {
+      invoke.mockResolvedValue(httpError(status, "Backend failure"));
+      await expect(submitRequest(SAMPLE_ENTRIES[0]!.request)).rejects.toThrow("Backend failure");
     },
-  };
-
-  it("maps decision correctly", () => {
-    expect(mapEdgeResponse(R07_EDGE_PAYLOAD).decision).toBe("APPROVE_STATISTICAL");
+  );
+  it("surfaces transport errors", async () => {
+    invoke.mockRejectedValue(new Error("Offline"));
+    await expect(submitRequest(SAMPLE_ENTRIES[0]!.request)).rejects.toThrow("Offline");
   });
-
-  it("prefixes bare article numbers with 'Art. '", () => {
-    const result = mapEdgeResponse(R07_EDGE_PAYLOAD);
-    expect(result.articles).toContain("Art. 53");
-    expect(result.articles).toContain("Art. 69");
-  });
-
-  it("does not double-prefix articles that already start with 'Art.'", () => {
-    const data = { ...R07_EDGE_PAYLOAD, articles: ["Art. 53", "Art. 69"] };
-    const result = mapEdgeResponse(data);
-    expect(result.articles).toEqual(["Art. 53", "Art. 69"]);
-  });
-
-  it("maps answer object into results rows", () => {
-    const result = mapEdgeResponse(R07_EDGE_PAYLOAD);
-    expect(result.results).toHaveLength(9);
-    expect(result.results.find((r) => r.label === "Wien")).toEqual({ label: "Wien", value: "245" });
-    expect(result.results.find((r) => r.label === "Burgenland")).toEqual({ label: "Burgenland", value: "28" });
-  });
-
-  it("maps string counts (e.g. '<10') as-is", () => {
-    const data = { ...R07_EDGE_PAYLOAD, answer: { Region: "<10" } };
-    expect(mapEdgeResponse(data).results[0].value).toBe("<10");
-  });
-
-  it("sets cohort_size to 0 and spe_status to not_required", () => {
-    const result = mapEdgeResponse(R07_EDGE_PAYLOAD);
-    expect(result.cohort_size).toBe(0);
-    expect(result.spe_status).toBe("not_required");
-  });
-
-  it("does not set mock flag", () => {
-    expect(mapEdgeResponse(R07_EDGE_PAYLOAD).mock).toBeUndefined();
+  it("surfaces function-level errors and missing responses", async () => {
+    invoke.mockResolvedValue({ data: { error: "Invalid request" }, error: null });
+    await expect(submitRequest({})).rejects.toThrow("Invalid request");
+    invoke.mockResolvedValue({ data: null, error: null });
+    await expect(submitRequest({})).rejects.toThrow("invalid response");
   });
 });
-
-// ─── submitRequest ────────────────────────────────────────────────────────────
-describe("submitRequest", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("returns live data when edge function succeeds", async () => {
-    invokeMock.mockResolvedValue({
-      data: {
-        request_id: "R07",
-        decision: "APPROVE_STATISTICAL",
-        articles: ["53", "69"],
-        reason: "test reason",
-        answer: { Wien: 245 },
-      },
-      error: null,
+describe("secure downloads", () => {
+  it("calls spe-download and extracts the actual 403 JSON message", async () => {
+    invoke.mockResolvedValue(
+      httpError(403, "Download is not permitted. This attempt has been logged."),
+    );
+    expect(await downloadRequest("R05")).toEqual({
+      status: 403,
+      message: "Download is not permitted. This attempt has been logged.",
     });
-    const result = await submitRequest(R07_REQUEST);
-    expect(result.decision).toBe("APPROVE_STATISTICAL");
-    expect(result.mock).toBeUndefined();
-    expect(result.results).toEqual([{ label: "Wien", value: "245" }]);
+    expect(invoke).toHaveBeenCalledWith("spe-download", { body: { id: "R05" } });
   });
-
-  it("falls back to mock when edge function returns an error field (501)", async () => {
-    invokeMock.mockResolvedValue({
-      data: { error: "not supported yet" },
-      error: null,
-    });
-    const result = await submitRequest(s("REQ-001"));
-    expect(result.mock).toBe(true);
-    expect(result.decision).toBe("APPROVE_STATISTICAL"); // REQ-001 is aggregated research
+  it("does not expose unexpected successful data", async () => {
+    invoke.mockResolvedValue({ data: { records: ["must never be shown"] }, error: null });
+    await expect(downloadRequest("R05")).rejects.toThrow("required 403 refusal");
   });
-
-  it("falls back to mock when edge function returns a Supabase error", async () => {
-    invokeMock.mockResolvedValue({
+  it("surfaces server, network and malformed response errors", async () => {
+    invoke.mockResolvedValue(httpError(500, "Unavailable"));
+    await expect(downloadRequest("R05")).rejects.toThrow("Unavailable");
+    invoke.mockRejectedValue(new Error("Offline"));
+    await expect(downloadRequest("R05")).rejects.toThrow("Offline");
+    invoke.mockResolvedValue({
       data: null,
-      error: { message: "Function error" },
+      error: { message: "Forbidden", context: new Response("", { status: 403 }) },
     });
-    const result = await submitRequest(s("REQ-002"));
-    expect(result.mock).toBe(true);
-    expect(result.decision).toBe("REJECT");
-  });
-
-  it("falls back to mock on network exception", async () => {
-    invokeMock.mockRejectedValue(new Error("Network failure"));
-    const result = await submitRequest(s("REQ-003"));
-    expect(result.mock).toBe(true);
-    expect(result.decision).toBe("APPROVE_SPE");
+    expect(await downloadRequest("R05")).toEqual({ status: 403, message: "Forbidden" });
   });
 });
 
-// ─── SAMPLE_ENTRIES ───────────────────────────────────────────────────────────
-describe("SAMPLE_ENTRIES", () => {
-  it("has R07 as the first entry", () => {
-    expect(SAMPLE_ENTRIES[0].id).toBe("R07");
+describe("live staff history", () => {
+  it("fetches overview including duplicates and download attempts without using local submissions", async () => {
+    const row = {
+      request_id: "R05",
+      submitted_at: "2026-10-29T18:30:00Z",
+      decision: "APPROVE_SPE",
+      articles: ["53"],
+      needs_review: false,
+      spe_schema: "spe_r05",
+    };
+    const history = {
+      requests: [row, row],
+      downloads: [{ request_id: "R05", attempted_at: "2026-10-29T18:31:00Z" }],
+    };
+    invoke.mockResolvedValue({ data: history, error: null });
+    expect(await listRequests()).toEqual(history);
+    expect(invoke).toHaveBeenCalledWith("requests", { method: "GET" });
   });
-
-  it("labels R07 with 'live data'", () => {
-    expect(SAMPLE_ENTRIES[0].label).toContain("live data");
+  it("fetches an encoded id and preserves saved cohort and review information", async () => {
+    const saved = {
+      ...statistical,
+      decision: "APPROVE_SPE" as const,
+      answer: { cohort_size: 12 },
+      spe_schema: "spe_r05",
+      needs_review: true,
+      parse_errors: [{ definition: "Unknown", reason: "Unsupported" }],
+    };
+    invoke.mockResolvedValue({ data: saved, error: null });
+    expect(await getRequest("R 05/?#&")).toEqual(mapEdgeResponse(saved));
+    expect(invoke).toHaveBeenCalledWith("requests?id=R%2005%2F%3F%23%26", { method: "GET" });
   });
-
-  it("contains all legacy samples after R07", () => {
-    const ids = SAMPLE_ENTRIES.slice(1).map((e) => e.id);
-    expect(ids).toEqual(SAMPLES.map((s) => s.id));
+  it("surfaces history and saved-result failures", async () => {
+    invoke.mockResolvedValue(httpError(500, "internal server error"));
+    await expect(listRequests()).rejects.toThrow("internal server error");
+    invoke.mockResolvedValue(httpError(404, "request not found"));
+    await expect(getRequest("missing")).rejects.toThrow("request not found");
   });
-
-  it("R07 entry request matches R07_REQUEST", () => {
-    expect(SAMPLE_ENTRIES[0].request).toBe(R07_REQUEST);
+  it("accepts empty live history", async () => {
+    invoke.mockResolvedValue({ data: { requests: [], downloads: [] }, error: null });
+    expect(await listRequests()).toEqual({ requests: [], downloads: [] });
   });
 });
