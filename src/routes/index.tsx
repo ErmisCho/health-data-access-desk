@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
-  SAMPLES,
+  SAMPLE_ENTRIES,
   submitRequest,
   listRequests,
   downloadRequest,
@@ -65,7 +65,7 @@ function Index() {
 }
 
 function Applicant() {
-  const [text, setText] = useState(JSON.stringify(SAMPLES[0], null, 2));
+  const [text, setText] = useState(JSON.stringify(SAMPLE_ENTRIES[0].request, null, 2));
   const [result, setResult] = useState<DecisionResult | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -92,10 +92,10 @@ function Applicant() {
           Sample request
           <select
             className="mt-1 block w-full rounded border border-input bg-card px-3 py-2 text-foreground"
-            onChange={(e) => setText(JSON.stringify(SAMPLES[+e.target.value], null, 2))}
+            onChange={(e) => setText(JSON.stringify(SAMPLE_ENTRIES[+e.target.value].request, null, 2))}
           >
-            {SAMPLES.map((s, i) => (
-              <option key={s.id} value={i}>{s.id} — {s.applicant} ({s.purpose})</option>
+            {SAMPLE_ENTRIES.map((s, i) => (
+              <option key={s.id} value={i}>{s.label}</option>
             ))}
           </select>
         </label>
@@ -111,7 +111,14 @@ function Applicant() {
         </button>
       </section>
       <section className="rounded border border-border bg-card p-6">
-        <h2 className="font-display text-2xl font-semibold">Decision</h2>
+        <h2 className="font-display text-2xl font-semibold">
+          Decision
+          {result?.mock && (
+            <span className="ml-3 inline-block rounded bg-muted px-2 py-0.5 font-mono text-xs font-normal text-muted-foreground align-middle">
+              mock data
+            </span>
+          )}
+        </h2>
         {!result ? (
           <p className="mt-4 text-muted-foreground">Submit a request to see the HDAB decision.</p>
         ) : (
