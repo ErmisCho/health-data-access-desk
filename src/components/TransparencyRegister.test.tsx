@@ -138,7 +138,7 @@ it("table region is keyboard-reachable and has an accessible caption", async () 
   expect(region).toHaveAttribute("tabindex", "0");
 });
 
-it("register table scrollable container has overflow-x:auto and max-width:100%", async () => {
+it("register table scrollable container has overflow-x:auto, w-full, max-w-full, and min-w-0", async () => {
   invoke.mockResolvedValue({
     data: {
       entries: [
@@ -150,8 +150,12 @@ it("register table scrollable container has overflow-x:auto and max-width:100%",
   render(<TransparencyRegister />);
   await screen.findByText("HDAB-X2");
   const region = screen.getByRole("region", { name: "Published decisions" });
-  const style = window.getComputedStyle(region);
-  // jsdom may not compute Tailwind classes, so check the className directly
+  // jsdom does not compute Tailwind classes; check className tokens directly
   expect(region.className).toMatch(/overflow-x-auto/);
   expect(region.className).toMatch(/max-w-full/);
+  expect(region.className).toMatch(/\bw-full\b/);
+  expect(region.className).toMatch(/min-w-0/);
+  // The scroll region's nearest block ancestor (main) must also carry min-w-0
+  const main = document.getElementById("main-content");
+  expect(main?.className).toMatch(/min-w-0/);
 });

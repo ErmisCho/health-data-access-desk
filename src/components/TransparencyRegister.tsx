@@ -54,11 +54,11 @@ export function TransparencyRegister() {
   return (
     <div className="min-h-screen bg-landing text-foreground">
       <SiteHeader />
-      <main id="main-content" className="mx-auto max-w-6xl space-y-6 px-5 py-10 sm:px-6 sm:py-16">
+      <main id="main-content" className="mx-auto max-w-6xl min-w-0 space-y-6 px-5 py-10 sm:px-6 sm:py-16">
         <h1 className="font-display text-3xl font-semibold sm:text-4xl">{t("register.title")}</h1>
         <p className="max-w-3xl text-lg text-muted-foreground">{t("register.intro")}</p>
         <p className="max-w-3xl text-muted-foreground">{t("register.privacy")}</p>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 min-w-0">
           <label htmlFor="decision-filter" className="font-medium">
             {t("register.filterLabel")}
           </label>
@@ -105,7 +105,7 @@ export function TransparencyRegister() {
                 role="region"
                 aria-label={t("register.ariaPublished")}
                 tabIndex={0}
-                className="max-w-full overflow-x-auto rounded border border-border focus-visible:outline-2 focus-visible:outline-ring"
+                className="w-full max-w-full min-w-0 overflow-x-auto rounded border border-border focus-visible:outline-2 focus-visible:outline-ring"
               >
                 <table className="w-full min-w-[600px] text-left text-sm">
                   <caption className="sr-only">{t("register.caption")}</caption>
