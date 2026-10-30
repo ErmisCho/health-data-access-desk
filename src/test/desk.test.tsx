@@ -97,7 +97,7 @@ describe("Desk route", () => {
     const guided = change.startsWith("guided");
     if (guided) {
       fireEvent.change(screen.getByLabelText("Load a sample"), { target: { value: "0" } });
-      fireEvent.click(screen.getByRole("button", { name: /6\./ }));
+      fireEvent.click(screen.getByRole("button", { name: /3\./ }));
     } else {
       fireEvent.click(screen.getByRole("button", { name: "JSON" }));
     }
@@ -108,7 +108,7 @@ describe("Desk route", () => {
     if (change === "tab") fireEvent.click(screen.getByRole("button", { name: "Guided" }));
     if (change === "guided sample") fireEvent.change(screen.getByLabelText("Load a sample"), { target: { value: "1" } });
     if (change === "guided field") {
-      fireEvent.click(screen.getByRole("button", { name: /1\./ }));
+      fireEvent.click(screen.getByRole("button", { name: /3\./ }));
       fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Changed name" } });
     }
     expect(screen.queryByRole("heading", { name: "Decision" })).not.toBeInTheDocument();

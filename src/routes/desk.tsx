@@ -84,8 +84,10 @@ function Applicant() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-2xl font-semibold">{t("desk.applicant.heading")}</h2>
+        <details className="text-sm" open={tab === "json"}>
+        <summary className="cursor-pointer text-muted-foreground">{t("form.advanced")}</summary>
         <div
-          className="flex rounded border border-border p-1"
+          className="mt-2 flex rounded border border-border p-1"
           aria-label={t("desk.inputMode")}
         >
           {(["guided", "json"] as ApplicantTab[]).map((tabKey) => (
@@ -99,6 +101,7 @@ function Applicant() {
             </button>
           ))}
         </div>
+        </details>
       </div>
 
       {tab === "guided" && (

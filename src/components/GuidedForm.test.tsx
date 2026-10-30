@@ -306,3 +306,19 @@ describe("GuidedForm WeUnderstoodPanel staff-review banner", () => {
     ).toBeInTheDocument();
   });
 });
+
+describe("GuidedForm three steps", () => {
+  it("starts with the question, ends with the applicant and a country list led by Austria and Germany", () => {
+    render(<GuidedForm onResult={noop} />);
+    const steps = screen.getAllByRole("button").filter((b) => /^\d\./.test(b.textContent ?? ""));
+    expect(steps.map((b) => b.textContent)).toEqual([
+      "1. What you want to know",
+      "2. Definitions",
+      "3. About you & submit",
+    ]);
+    expect(screen.getByLabelText("What is your research question?")).toBeInTheDocument();
+    fireEvent.click(steps[2]!);
+    const country = screen.getByLabelText("Country") as HTMLSelectElement;
+    expect([...country.options].slice(1, 3).map((o) => o.value)).toEqual(["AT", "DE"]);
+  });
+});

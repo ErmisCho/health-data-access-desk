@@ -22,8 +22,8 @@ import { localizeBackendText } from "@/lib/i18n/translations";
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-type Step = 1 | 2 | 3 | 4 | 5 | 6;
-const STEPS = [1, 2, 3, 4, 5, 6] as Step[];
+type Step = 1 | 2 | 3;
+const STEPS = [1, 2, 3] as Step[];
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -46,6 +46,21 @@ function toRequest(form: AccessRequest): AccessRequest {
     ...form,
     definitions: form.definitions.filter((d) => d.trim().length > 0),
   };
+}
+
+// EU and EEA countries; Austria and Germany first, the rest by localized name.
+const COUNTRIES = ["BE", "BG", "CY", "CZ", "DK", "EE", "ES", "FI", "FR", "GR", "HR", "HU", "IE", "IS", "IT", "LI", "LT", "LU", "LV", "MT", "NL", "NO", "PL", "PT", "RO", "SE", "SI", "SK"];
+
+function countryOptions(lang: string, current: string): [string, string][] {
+  const names = new Intl.DisplayNames([lang], { type: "region" });
+  const name = (code: string) => names.of(code) ?? code;
+  // Keep an imported code outside the list selectable instead of dropping it.
+  const rest = current && !["AT", "DE", ...COUNTRIES].includes(current) ? [...COUNTRIES, current] : COUNTRIES;
+  return [
+    ["AT", name("AT")],
+    ["DE", name("DE")],
+    ...rest.map((code): [string, string] => [code, name(code)]).sort((x, y) => x[1].localeCompare(y[1], lang)),
+  ];
 }
 
 // ---------------------------------------------------------------------------
@@ -117,6 +132,17 @@ function WeUnderstoodPanel({ preview }: { preview: PreviewResult }) {
       aria-label={t("form.weUnderstood")}
       className="rounded border border-border bg-muted/30 p-4 space-y-3"
     >
+      <p className="text-base font-semibold">
+        {t(
+          preview.needs_review
+            ? "form.likely.held"
+            : preview.decision === "APPROVE_STATISTICAL"
+              ? "form.likely.APPROVE_STATISTICAL"
+              : preview.decision === "APPROVE_SPE"
+                ? "form.likely.APPROVE_SPE"
+                : "form.likely.REJECT",
+        )}
+      </p>
       <h3 className="font-semibold text-sm">{t("form.weUnderstood")}</h3>
       <DecisionBadge decision={preview.decision} />
       <p className="text-sm">{localizeBackendText(preview.reason, lang)}</p>
@@ -192,9 +218,6 @@ export function GuidedForm({
     1: t("form.step1"),
     2: t("form.step2"),
     3: t("form.step3"),
-    4: t("form.step4"),
-    5: t("form.step5"),
-    6: t("form.step6"),
   };
 
   // ── Sample loader ──────────────────────────────────────────────────────────
@@ -407,56 +430,63 @@ export function GuidedForm({
             ))}
           </select>
         </div>
-        <button
-          type="button"
-          onClick={() => setShowImport((v) => !v)}
-          className="rounded border border-input px-3 py-2 text-sm hover:bg-muted"
-        >
-          {t("form.importJson")}
-        </button>
-        <button
-          type="button"
-          onClick={exportJson}
-          className="rounded border border-input px-3 py-2 text-sm hover:bg-muted"
-        >
-          {t("form.exportJson")}
-        </button>
       </div>
 
-      {/* Import panel */}
-      {showImport && (
-        <div className="rounded border border-border bg-card p-4 space-y-2">
-          <p className="text-sm font-medium">{t("form.pasteOrUpload")}</p>
-          <textarea
-            aria-label="Paste JSON for import"
-            value={importText}
-            onChange={(e) => { invalidateResult(); setImportText(e.target.value); }}
-            rows={5}
-            className={textareaCls}
-            placeholder='{ "requested_as": "...", ... }'
-          />
-          {importError && <p className="text-xs text-destructive">{importError}</p>}
-          <div className="flex gap-2">
+      <details className="rounded border border-border bg-card px-4 py-2">
+        <summary className="cursor-pointer text-sm font-medium">{t("form.advanced")}</summary>
+        <div className="mt-3 space-y-3">
+          <div className="flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={() => applyImport(importText)}
-              className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:opacity-90"
+              onClick={() => setShowImport((v) => !v)}
+              className="rounded border border-input px-3 py-2 text-sm hover:bg-muted"
             >
-              {t("form.apply")}
+              {t("form.importJson")}
             </button>
-            <label className="cursor-pointer rounded border border-input px-3 py-1.5 text-sm hover:bg-muted">
-              {t("form.uploadFile")}
-              <input
-                ref={fileRef}
-                type="file"
-                accept=".json,application/json"
-                className="sr-only"
-                onChange={handleFileImport}
-              />
-            </label>
+            <button
+              type="button"
+              onClick={exportJson}
+              className="rounded border border-input px-3 py-2 text-sm hover:bg-muted"
+            >
+              {t("form.exportJson")}
+            </button>
           </div>
+          {/* Import panel */}
+          {showImport && (
+            <div className="rounded border border-border bg-card p-4 space-y-2">
+              <p className="text-sm font-medium">{t("form.pasteOrUpload")}</p>
+              <textarea
+                aria-label="Paste JSON for import"
+                value={importText}
+                onChange={(e) => { invalidateResult(); setImportText(e.target.value); }}
+                rows={5}
+                className={textareaCls}
+                placeholder='{ "requested_as": "...", ... }'
+              />
+              {importError && <p className="text-xs text-destructive">{importError}</p>}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => applyImport(importText)}
+                  className="rounded bg-primary px-3 py-1.5 text-sm text-primary-foreground hover:opacity-90"
+                >
+                  {t("form.apply")}
+                </button>
+                <label className="cursor-pointer rounded border border-input px-3 py-1.5 text-sm hover:bg-muted">
+                  {t("form.uploadFile")}
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept=".json,application/json"
+                    className="sr-only"
+                    onChange={handleFileImport}
+                  />
+                </label>
+              </div>
+            </div>
+          )}
         </div>
-      )}
+      </details>
 
       {/* Step navigation */}
       <StepNav current={step} onChange={setStep} stepLabels={STEP_LABELS} />
@@ -464,57 +494,30 @@ export function GuidedForm({
       {/* Step content */}
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="space-y-5 min-w-0">
-          {/* Step 1: Applicant */}
+          {/* Step 1: What you want to know */}
           {step === 1 && (
             <fieldset className="space-y-4">
-              <legend className="text-base font-semibold">{t("form.applicant.legend")}</legend>
-              <Field id="g-name" label={t("form.applicant.name")}>
-                <input
-                  id="g-name"
-                  type="text"
-                  autoComplete="name"
-                  value={form.applicant.name}
-                  onChange={(e) => setApplicantField("name", e.target.value)}
-                  className={inputCls}
+              <legend className="text-base font-semibold">{t("form.step1")}</legend>
+              <Field id="g-question" label={t("form.question.label")}>
+                <textarea
+                  id="g-question"
+                  rows={4}
+                  value={form.question}
+                  onChange={(e) => setField("question", e.target.value)}
+                  className={textareaCls}
+                  placeholder={t("form.question.placeholder")}
                 />
               </Field>
-              <Field id="g-org" label={t("form.applicant.org")}>
-                <input
-                  id="g-org"
-                  type="text"
-                  autoComplete="organization"
-                  value={form.applicant.organisation}
-                  onChange={(e) => setApplicantField("organisation", e.target.value)}
-                  className={inputCls}
+              <Field id="g-purpose" label={t("form.purpose.label")}>
+                <textarea
+                  id="g-purpose"
+                  rows={5}
+                  value={form.purpose}
+                  onChange={(e) => setField("purpose", e.target.value)}
+                  className={textareaCls}
+                  placeholder={t("form.purpose.placeholder")}
                 />
               </Field>
-              <Field id="g-country" label={t("form.applicant.country")}>
-                <input
-                  id="g-country"
-                  type="text"
-                  autoComplete="country"
-                  maxLength={2}
-                  value={form.applicant.country}
-                  onChange={(e) =>
-                    setApplicantField("country", e.target.value.toUpperCase().slice(0, 2))
-                  }
-                  className={inputCls}
-                />
-              </Field>
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-              >
-                {t("form.next")}
-              </button>
-            </fieldset>
-          )}
-
-          {/* Step 2: Request type */}
-          {step === 2 && (
-            <fieldset className="space-y-4">
-              <legend className="text-base font-semibold">{t("form.requestType.legend")}</legend>
               <Field id="g-requested-as" label={t("form.requestType.requestedAs")}>
                 <select
                   id="g-requested-as"
@@ -549,47 +552,7 @@ export function GuidedForm({
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
-                  className="rounded border border-input px-4 py-2 text-sm hover:bg-muted"
-                >
-                  {t("form.back")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-                >
-                  {t("form.next")}
-                </button>
-              </div>
-            </fieldset>
-          )}
-
-          {/* Step 3: Purpose */}
-          {step === 3 && (
-            <fieldset className="space-y-4">
-              <legend className="text-base font-semibold">{t("form.purpose.legend")}</legend>
-              <Field id="g-purpose" label={t("form.purpose.label")}>
-                <textarea
-                  id="g-purpose"
-                  rows={5}
-                  value={form.purpose}
-                  onChange={(e) => setField("purpose", e.target.value)}
-                  className={textareaCls}
-                  placeholder={t("form.purpose.placeholder")}
-                />
-              </Field>
-              <div className="flex gap-2">
-                <button
-                  type="button"
                   onClick={() => setStep(2)}
-                  className="rounded border border-input px-4 py-2 text-sm hover:bg-muted"
-                >
-                  {t("form.back")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep(4)}
                   className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
                 >
                   {t("form.next")}
@@ -598,41 +561,8 @@ export function GuidedForm({
             </fieldset>
           )}
 
-          {/* Step 4: Question */}
-          {step === 4 && (
-            <fieldset className="space-y-4">
-              <legend className="text-base font-semibold">{t("form.question.legend")}</legend>
-              <Field id="g-question" label={t("form.question.label")}>
-                <textarea
-                  id="g-question"
-                  rows={4}
-                  value={form.question}
-                  onChange={(e) => setField("question", e.target.value)}
-                  className={textareaCls}
-                  placeholder={t("form.question.placeholder")}
-                />
-              </Field>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setStep(3)}
-                  className="rounded border border-input px-4 py-2 text-sm hover:bg-muted"
-                >
-                  {t("form.back")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setStep(5)}
-                  className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-                >
-                  {t("form.next")}
-                </button>
-              </div>
-            </fieldset>
-          )}
-
-          {/* Step 5: Definitions */}
-          {step === 5 && (
+          {/* Step 2: Definitions */}
+          {step === 2 && (
             <fieldset className="space-y-4">
               <legend className="text-base font-semibold">{t("form.definitions.legend")}</legend>
               <p className="text-sm text-muted-foreground">{t("form.definitions.hint")}</p>
@@ -690,14 +620,14 @@ export function GuidedForm({
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setStep(4)}
+                  onClick={() => setStep(1)}
                   className="rounded border border-input px-4 py-2 text-sm hover:bg-muted"
                 >
                   {t("form.back")}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setStep(6)}
+                  onClick={() => setStep(3)}
                   className="rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
                 >
                   {t("form.next")}
@@ -706,10 +636,46 @@ export function GuidedForm({
             </fieldset>
           )}
 
-          {/* Step 6: Review & submit */}
-          {step === 6 && (
+          {/* Step 3: About you, review & submit */}
+          {step === 3 && (
             <fieldset className="space-y-4">
-              <legend className="text-base font-semibold">{t("form.review.legend")}</legend>
+              <legend className="text-base font-semibold">{t("form.step3")}</legend>
+              <Field id="g-name" label={t("form.applicant.name")}>
+                <input
+                  id="g-name"
+                  type="text"
+                  autoComplete="name"
+                  value={form.applicant.name}
+                  onChange={(e) => setApplicantField("name", e.target.value)}
+                  className={inputCls}
+                />
+              </Field>
+              <Field id="g-org" label={t("form.applicant.org")}>
+                <input
+                  id="g-org"
+                  type="text"
+                  autoComplete="organization"
+                  value={form.applicant.organisation}
+                  onChange={(e) => setApplicantField("organisation", e.target.value)}
+                  className={inputCls}
+                />
+              </Field>
+              <Field id="g-country" label={t("form.applicant.country")}>
+                <select
+                  id="g-country"
+                  autoComplete="country"
+                  value={form.applicant.country}
+                  onChange={(e) => setApplicantField("country", e.target.value)}
+                  className={inputCls}
+                >
+                  <option value="">{t("form.applicant.chooseCountry")}</option>
+                  {countryOptions(lang, form.applicant.country).map(([code, name]) => (
+                    <option key={code} value={code}>
+                      {name} ({code})
+                    </option>
+                  ))}
+                </select>
+              </Field>
               <dl className="rounded border border-border bg-card p-4 text-sm space-y-1">
                 <div className="flex gap-2">
                   <dt className="font-medium w-32 shrink-0">{t("form.review.applicant")}</dt>
@@ -758,7 +724,7 @@ export function GuidedForm({
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => setStep(5)}
+                  onClick={() => setStep(2)}
                   className="rounded border border-input px-4 py-2 text-sm hover:bg-muted"
                 >
                   {t("form.back")}
