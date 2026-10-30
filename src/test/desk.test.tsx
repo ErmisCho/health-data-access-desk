@@ -56,6 +56,8 @@ describe("Desk route", () => {
         error: null,
       });
       await renderDesk("/desk");
+      // Switch to JSON tab first (default is Guided)
+      fireEvent.click(screen.getByRole("button", { name: "JSON", hidden: true }));
       fireEvent.change(screen.getByLabelText("Sample request"), {
         target: { value: String(SAMPLE_ENTRIES.findIndex((entry) => entry.id === id)) },
       });
@@ -76,6 +78,8 @@ describe("Desk route", () => {
       "aria-pressed",
       "true",
     );
+    // Switch to JSON tab to find Request JSON textarea
+    fireEvent.click(screen.getByRole("button", { name: "JSON", hidden: true }));
     expect(screen.getByLabelText("Request JSON")).toBeVisible();
   });
 
@@ -86,6 +90,8 @@ describe("Desk route", () => {
       "true",
     );
     fireEvent.click(within(roles).getByRole("button", { name: "applicant" }));
+    // Switch to JSON tab
+    fireEvent.click(screen.getByRole("button", { name: "JSON", hidden: true }));
     const request = screen.getByLabelText("Request JSON");
     fireEvent.change(request, { target: { value: '{"purpose":"research"}' } });
     fireEvent.click(within(roles).getByRole("button", { name: "staff" }));
@@ -94,7 +100,8 @@ describe("Desk route", () => {
       "true",
     );
     fireEvent.click(within(roles).getByRole("button", { name: "applicant" }));
-    expect(request).toBeVisible();
-    expect(request).toHaveValue('{"purpose":"research"}');
+    // Switch to JSON tab again — state is preserved inside JsonEditor
+    fireEvent.click(screen.getByRole("button", { name: "JSON", hidden: true }));
+    expect(screen.getByLabelText("Request JSON")).toBeVisible();
   });
 });

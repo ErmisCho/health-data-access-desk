@@ -2,6 +2,24 @@ import { supabase } from "@/integrations/supabase/client";
 export { SAMPLE_ENTRIES, type AccessRequest } from "./requests";
 
 export type Decision = "REJECT" | "APPROVE_STATISTICAL" | "APPROVE_SPE";
+
+export interface PreviewUnreadable {
+  index: number;
+  definition: string;
+  reason: string;
+}
+
+export interface PreviewResult {
+  decision: Decision;
+  articles: string[];
+  reason: string;
+  needs_review: boolean;
+  status: "staff_review" | "decided";
+  rule: string;
+  trigger_phrases: string[];
+  plan_summary?: string;
+  unreadable: PreviewUnreadable[];
+}
 export type AnswerValue = number | string;
 export type Answer = { [key: string]: AnswerValue | Answer };
 export interface LegalArticle {
@@ -140,3 +158,15 @@ export async function downloadRequest(id: string): Promise<{ status: number; mes
       : "Download blocked: the backend did not return the required 403 refusal.",
   );
 }
+
+export async function previewRequest(request: unknown): Promise<PreviewResult> {
+  if (!request || typeof request !== "object" || Array.isArray(request))
+    throw new Error("Preview body must be an object.");
+  const data = await requireData<PreviewResult>(
+    await supabase.functions.invoke("requests/preview", {
+      body: request as Record<string, unknown>,
+    }),
+  );
+  return data;
+}
+

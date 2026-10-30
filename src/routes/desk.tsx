@@ -1,11 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
-import { SAMPLE_ENTRIES, submitRequest, type DecisionResult } from "@/lib/ehds";
+import { SAMPLE_ENTRIES, submitRequest, type AccessRequest, type DecisionResult } from "@/lib/ehds";
 import { StaffHistory } from "@/components/StaffHistory";
 import { DecisionDetails } from "@/components/DecisionDetails";
 import { DemoPanel } from "@/components/DemoPanel";
-
+import { GuidedForm } from "@/components/GuidedForm";
 import { EmptyState, ErrorState } from "@/components/States";
 
 export const Route = createFileRoute("/desk")({
@@ -68,15 +68,71 @@ function Desk() {
   );
 }
 
+type ApplicantTab = "guided" | "json";
+
 function Applicant() {
-  const [text, setText] = useState(JSON.stringify(SAMPLE_ENTRIES[0]!.request, null, 2));
+  const [tab, setTab] = useState<ApplicantTab>("guided");
   const [result, setResult] = useState<DecisionResult | null>(null);
-  const [submittedText, setSubmittedText] = useState<{ purpose?: string; question?: string }>({});
+  const [submittedRequest, setSubmittedRequest] = useState<AccessRequest | null>(null);
+
+  function handleResult(r: DecisionResult, req: AccessRequest) {
+    setResult(r);
+    setSubmittedRequest(req);
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-2xl font-semibold">Data access request</h2>
+        <div
+          className="flex rounded border border-border p-1"
+          aria-label="Input mode"
+        >
+          {(["guided", "json"] as ApplicantTab[]).map((t) => (
+            <button
+              key={t}
+              aria-pressed={tab === t}
+              onClick={() => setTab(t)}
+              className={`rounded px-4 py-1 text-sm font-medium capitalize ${tab === t ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+            >
+              {t === "guided" ? "Guided" : "JSON"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {tab === "guided" && (
+        <GuidedForm onResult={handleResult} />
+      )}
+
+      {tab === "json" && (
+        <JsonEditor onResult={handleResult} />
+      )}
+
+      {result && submittedRequest && (
+        <section aria-live="polite" className="rounded border border-border bg-card p-6">
+          <h2 className="font-display text-2xl font-semibold mb-4">Decision</h2>
+          <DecisionDetails
+            key={JSON.stringify(result)}
+            result={result}
+            request={{ purpose: submittedRequest.purpose, question: submittedRequest.question }}
+          />
+        </section>
+      )}
+    </div>
+  );
+}
+
+function JsonEditor({
+  onResult,
+}: {
+  onResult: (result: DecisionResult, req: AccessRequest) => void;
+}) {
+  const [text, setText] = useState(JSON.stringify(SAMPLE_ENTRIES[0]!.request, null, 2));
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   async function submit() {
     setError("");
-    setResult(null);
     let parsed: unknown;
     try {
       parsed = JSON.parse(text);
@@ -86,69 +142,76 @@ function Applicant() {
     }
     setBusy(true);
     try {
-      setResult(await submitRequest(parsed));
+      const result = await submitRequest(parsed);
       const source = parsed as Record<string, unknown>;
-      setSubmittedText({
-        ...(typeof source["purpose"] === "string" ? { purpose: source["purpose"] } : {}),
-        ...(typeof source["question"] === "string" ? { question: source["question"] } : {}),
-      });
-    } catch (error) {
-      setError(error instanceof Error ? error.message : "Request failed. Please try again.");
+      const req: AccessRequest = {
+        id: typeof source["id"] === "string" ? source["id"] : "",
+        submitted: typeof source["submitted"] === "string" ? source["submitted"] : new Date().toISOString(),
+        applicant:
+          source["applicant"] && typeof source["applicant"] === "object" && !Array.isArray(source["applicant"])
+            ? {
+                name: String((source["applicant"] as Record<string, unknown>)["name"] ?? ""),
+                organisation: String((source["applicant"] as Record<string, unknown>)["organisation"] ?? ""),
+                country: String((source["applicant"] as Record<string, unknown>)["country"] ?? ""),
+              }
+            : { name: "", organisation: "", country: "" },
+        requested_as:
+          source["requested_as"] === "health data access application"
+            ? "health data access application"
+            : "health data request",
+        requested_format:
+          source["requested_format"] === "pseudonymised records"
+            ? "pseudonymised records"
+            : "anonymised statistics",
+        purpose: typeof source["purpose"] === "string" ? source["purpose"] : "",
+        question: typeof source["question"] === "string" ? source["question"] : "",
+        definitions: Array.isArray(source["definitions"])
+          ? (source["definitions"] as string[]).filter((d): d is string => typeof d === "string")
+          : [],
+      };
+      onResult(result, req);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Request failed. Please try again.");
     } finally {
       setBusy(false);
     }
   }
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
-      <section className="min-w-0">
-        <h2 className="font-display text-2xl font-semibold">Data access request</h2>
-        <label className="mt-4 block text-sm text-muted-foreground">
-          Sample request
-          <select
-            disabled={busy}
-            className="mt-1 block w-full rounded border border-input bg-card px-3 py-2 text-foreground"
-            onChange={(e) => {
-              setText(JSON.stringify(SAMPLE_ENTRIES[+e.target.value]!.request, null, 2));
-              setResult(null);
-              setError("");
-            }}
-          >
-            {SAMPLE_ENTRIES.map((s, i) => (
-              <option key={s.id} value={i}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <textarea
-          aria-label="Request JSON"
+    <div className="space-y-4">
+      <label className="block text-sm text-muted-foreground">
+        Sample request
+        <select
           disabled={busy}
-          value={text}
+          className="mt-1 block w-full rounded border border-input bg-card px-3 py-2 text-foreground"
           onChange={(e) => {
-            setText(e.target.value);
-            setResult(null);
+            setText(JSON.stringify(SAMPLE_ENTRIES[+e.target.value]!.request, null, 2));
+            setError("");
           }}
-          className="mt-4 h-80 w-full rounded border border-input bg-card p-3 font-mono text-sm"
-        />
-        {error && <ErrorState>{error}</ErrorState>}
-        <button
-          onClick={submit}
-          disabled={busy}
-          className="mt-4 rounded bg-primary px-6 py-2.5 font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
         >
-          {busy ? "Evaluating…" : "Submit request"}
-        </button>
-      </section>
-      <section aria-live="polite" className="min-w-0 rounded border border-border bg-card p-6">
-        <h2 className="font-display text-2xl font-semibold">Decision</h2>
-        {result ? (
-          <DecisionDetails key={JSON.stringify(result)} result={result} request={submittedText} />
-        ) : (
-          <EmptyState
-            title={busy ? "Evaluating request…" : "Submit a request to see the HDAB decision."}
-          />
-        )}
-      </section>
+          {SAMPLE_ENTRIES.map((s, i) => (
+            <option key={s.id} value={i}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <textarea
+        aria-label="Request JSON"
+        disabled={busy}
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+        }}
+        className="h-80 w-full rounded border border-input bg-card p-3 font-mono text-sm"
+      />
+      {error && <ErrorState>{error}</ErrorState>}
+      <button
+        onClick={submit}
+        disabled={busy}
+        className="rounded bg-primary px-6 py-2.5 font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+      >
+        {busy ? "Evaluating…" : "Submit request"}
+      </button>
     </div>
   );
 }
