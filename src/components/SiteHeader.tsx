@@ -1,3 +1,4 @@
+import { useHdab } from "@/lib/hdab";
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
 import { useLang, useT } from "@/lib/i18n";
@@ -5,6 +6,7 @@ import { useLang, useT } from "@/lib/i18n";
 export function SiteHeader() {
   const { lang, setLang } = useLang();
   const t = useT();
+  const { configs, selected, select, error } = useHdab();
   return (
     <header className="border-b border-border bg-primary text-primary-foreground">
       <nav
@@ -77,6 +79,42 @@ export function SiteHeader() {
           </div>
         </div>
       </nav>
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-5 pb-4 text-sm sm:px-6">
+        <label className="flex items-center gap-2">
+          {lang === "de" ? "Zugangsstelle" : "Access body"}
+          <select
+            aria-label={lang === "de" ? "Zugangsstelle" : "Access body"}
+            className="rounded border border-primary-foreground/40 bg-primary px-2 py-1 text-primary-foreground"
+            value={selected?.code ?? ""}
+            disabled={!configs.length}
+            onChange={(event) => select(event.target.value)}
+          >
+            {!configs.length && (
+              <option value="">{lang === "de" ? "Wird geladen…" : "Loading…"}</option>
+            )}
+            {configs.map((config) => (
+              <option key={config.code} value={config.code}>
+                {config.country}
+              </option>
+            ))}
+          </select>
+        </label>
+        {selected && (
+          <>
+            <span>{selected.name}</span>
+            <a className="underline" href={`mailto:${selected.contact}`}>
+              {selected.contact}
+            </a>
+          </>
+        )}
+        {error && (
+          <span role="status">
+            {lang === "de"
+              ? "Zugangsstellen konnten nicht geladen werden."
+              : "Access bodies could not be loaded."}
+          </span>
+        )}
+      </div>
     </header>
   );
 }

@@ -155,7 +155,10 @@ it.each(SAMPLE_ENTRIES)("opens the full live result for $id via the data layer",
     "href",
     `/desk/letter/${sample.id}`,
   );
-  expect(invoke).toHaveBeenCalledExactlyOnceWith("requests", { body: sample.request });
+  expect(invoke).toHaveBeenCalledExactlyOnceWith("requests", {
+    headers: { "x-hdab": "at" },
+    body: sample.request,
+  });
   expect(screen.getByRole("heading", { name: `${sample.id} · Live result` })).toHaveFocus();
 });
 

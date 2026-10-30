@@ -1,3 +1,4 @@
+import { hdabHeaders } from "./hdab-selection";
 import { supabase } from "@/integrations/supabase/client";
 export { SAMPLE_ENTRIES, type AccessRequest } from "./requests";
 
@@ -143,27 +144,33 @@ export async function submitRequest(request: unknown): Promise<DecisionResult> {
   if (!request || typeof request !== "object" || Array.isArray(request))
     throw new Error("Request JSON must be an object.");
   const data = await requireData<DecisionResult>(
-    await supabase.functions.invoke("requests", { body: request as Record<string, unknown> }),
+    await supabase.functions.invoke("requests", {
+      headers: hdabHeaders(),
+      body: request as Record<string, unknown>,
+    }),
   );
   return mapEdgeResponse(data);
 }
 
 export async function listRequests(): Promise<RequestHistory> {
   return requireData<RequestHistory>(
-    await supabase.functions.invoke("requests", { method: "GET" }),
+    await supabase.functions.invoke("requests", { headers: hdabHeaders(), method: "GET" }),
   );
 }
 
 export async function getRequest(id: string): Promise<DecisionResult> {
   const data = await requireData<DecisionResult>(
-    await supabase.functions.invoke(`requests?id=${encodeURIComponent(id)}`, { method: "GET" }),
+    await supabase.functions.invoke(`requests?id=${encodeURIComponent(id)}`, {
+      headers: hdabHeaders(),
+      method: "GET",
+    }),
   );
   return mapEdgeResponse(data);
 }
 
 export async function reviewRequest(body: StaffReviewBody): Promise<DecisionResult> {
   const data = await requireData<DecisionResult>(
-    await supabase.functions.invoke("requests/review", { body }),
+    await supabase.functions.invoke("requests/review", { headers: hdabHeaders(), body }),
   );
   return mapEdgeResponse(data);
 }
@@ -185,9 +192,28 @@ export async function previewRequest(request: unknown): Promise<PreviewResult> {
     throw new Error("Preview body must be an object.");
   const data = await requireData<PreviewResult>(
     await supabase.functions.invoke("requests/preview", {
+      headers: hdabHeaders(),
       body: request as Record<string, unknown>,
     }),
   );
   return data;
 }
 
+export interface PublicHdabConfig {
+  code: string;
+  country: string;
+  name: string;
+  display_language: "de" | "en";
+  languages: ("de" | "en")[];
+  contact: string;
+  branding: { primary: string; accent: string };
+}
+
+export async function listHdabs(): Promise<PublicHdabConfig[]> {
+  const data = await requireData<{ configs: PublicHdabConfig[] }>(
+    await supabase.functions.invoke("requests/hdab", { method: "GET" }),
+  );
+  if (!Array.isArray(data.configs) || !data.configs.length)
+    throw new Error("No access bodies available.");
+  return data.configs;
+}

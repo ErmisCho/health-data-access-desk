@@ -143,7 +143,7 @@ it("fetches selected IDs instead of presenting an overview as a full response", 
     screen.getByRole("button", { name: "View latest result for R01" }),
   );
   expect(await screen.findByText("263")).toBeInTheDocument();
-  expect(invoke).toHaveBeenLastCalledWith("requests?id=R01", { method: "GET" });
+  expect(invoke).toHaveBeenLastCalledWith("requests?id=R01", { headers: { "x-hdab": "at" }, method: "GET" });
   expect(
     screen.getByRole("columnheader", { name: "Percentage" }),
   ).toBeInTheDocument();
@@ -275,7 +275,7 @@ it("approve calls the review endpoint with the correct body and refreshes on suc
   fireEvent.click(screen.getByRole("button", { name: "Approve" }));
   await waitFor(() =>
     expect(invoke).toHaveBeenCalledWith("requests/review", {
-      body: {
+      headers: { "x-hdab": "at" }, body: {
         action: "approve",
         request_id: "R01",
         reason: "Purpose is valid.",

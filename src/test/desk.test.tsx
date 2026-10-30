@@ -68,7 +68,10 @@ describe("Desk route", () => {
       );
       expect(panel.querySelector("mark")?.textContent).toBe(phrase);
       expect(within(panel).getByText("Count eligible patients per region.")).toBeInTheDocument();
-      expect(supabase.functions.invoke).toHaveBeenCalledWith("requests", { body: request });
+      expect(supabase.functions.invoke).toHaveBeenCalledWith("requests", {
+        headers: { "x-hdab": "at" },
+        body: request,
+      });
     },
   );
 

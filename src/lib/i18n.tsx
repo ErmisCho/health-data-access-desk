@@ -12,6 +12,8 @@
 
 import {
   createContext,
+  useCallback,
+  useRef,
   useContext,
   useEffect,
   useState,
@@ -49,14 +51,31 @@ function writeSession(lang: Lang) {
 interface LangCtx {
   lang: Lang;
   setLang: (l: Lang) => void;
+  setDefaultLang: (l: Lang) => void;
 }
 
-const LangContext = createContext<LangCtx>({ lang: "en", setLang: () => {} });
+const LangContext = createContext<LangCtx>({
+  lang: "en",
+  setLang: () => {},
+  setDefaultLang: () => {},
+});
 
 export function LangProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(readSession);
 
+  const explicit = useRef(false);
+  const setDefaultLang = useCallback((l: Lang) => {
+    let saved = null;
+    try {
+      saved = sessionStorage.getItem(SESSION_KEY);
+    } catch {
+      /* unavailable */
+    }
+    if (!explicit.current && saved !== "de" && saved !== "en") setLangState(l);
+  }, []);
+
   function setLang(l: Lang) {
+    explicit.current = true;
     setLangState(l);
     writeSession(l);
   }
@@ -69,7 +88,7 @@ export function LangProvider({ children }: { children: ReactNode }) {
   }, [lang]);
 
   return (
-    <LangContext.Provider value={{ lang, setLang }}>
+    <LangContext.Provider value={{ lang, setLang, setDefaultLang }}>
       {children}
     </LangContext.Provider>
   );

@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import { EmptyState, ErrorState } from "@/components/States";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { HdabProvider } from "../lib/hdab";
 import { LangProvider } from "../lib/i18n";
 
 function NotFoundComponent() {
@@ -127,7 +128,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <LangProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-        <Outlet />
+        <HdabProvider>
+          <Outlet />
+        </HdabProvider>
       </LangProvider>
     </QueryClientProvider>
   );

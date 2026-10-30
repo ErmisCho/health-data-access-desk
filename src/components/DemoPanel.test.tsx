@@ -62,7 +62,7 @@ it.each(SAMPLE_ENTRIES)("shows the explanation for sample $id in Demo", async ({
   );
   expect(panel.querySelector("mark")?.textContent).toBe(phrase);
   expect(within(panel).getByText("Count eligible patients per region.")).toBeInTheDocument();
-  expect(invoke).toHaveBeenCalledWith("requests", { body: request });
+  expect(invoke).toHaveBeenCalledWith("requests", { headers: { "x-hdab": "at" }, body: request });
 });
 
 const cases = [
@@ -144,6 +144,7 @@ it.each(cases)(
       for (const article of result.articles)
         expect(live.getByText(`Art. ${article}`)).toBeInTheDocument();
       expect(invoke).toHaveBeenCalledWith("requests", {
+        headers: { "x-hdab": "at" },
         body: SAMPLE_ENTRIES.find((entry) => entry.id === id)!.request,
       });
       expect(invoke.mock.calls.filter(([name]) => name === "requests")).toHaveLength(run);

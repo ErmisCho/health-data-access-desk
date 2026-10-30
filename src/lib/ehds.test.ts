@@ -61,10 +61,13 @@ describe("responses and submission", () => {
     invoke.mockResolvedValue({ data: statistical, error: null });
     const request = SAMPLE_ENTRIES[0]!.request;
     expect(await submitRequest(request)).toEqual(mapEdgeResponse(statistical));
-    expect(invoke).toHaveBeenCalledWith("requests", { body: request });
+    expect(invoke).toHaveBeenCalledWith("requests", { headers: { "x-hdab": "at" }, body: request });
     const custom = { id: "custom", requested_as: "health data request", purpose: "Research" };
     await submitRequest(custom);
-    expect(invoke).toHaveBeenLastCalledWith("requests", { body: custom });
+    expect(invoke).toHaveBeenLastCalledWith("requests", {
+      headers: { "x-hdab": "at" },
+      body: custom,
+    });
   });
   it.each([400, 401, 403, 500, 501])(
     "surfaces HTTP %i without fabricated results",
@@ -128,7 +131,7 @@ describe("live staff history", () => {
     };
     invoke.mockResolvedValue({ data: history, error: null });
     expect(await listRequests()).toEqual(history);
-    expect(invoke).toHaveBeenCalledWith("requests", { method: "GET" });
+    expect(invoke).toHaveBeenCalledWith("requests", { headers: { "x-hdab": "at" }, method: "GET" });
   });
   it("fetches an encoded id and preserves saved cohort and review information", async () => {
     const saved = {
@@ -141,7 +144,10 @@ describe("live staff history", () => {
     };
     invoke.mockResolvedValue({ data: saved, error: null });
     expect(await getRequest("R 05/?#&")).toEqual(mapEdgeResponse(saved));
-    expect(invoke).toHaveBeenCalledWith("requests?id=R%2005%2F%3F%23%26", { method: "GET" });
+    expect(invoke).toHaveBeenCalledWith("requests?id=R%2005%2F%3F%23%26", {
+      headers: { "x-hdab": "at" },
+      method: "GET",
+    });
   });
   it("surfaces history and saved-result failures", async () => {
     invoke.mockResolvedValue(httpError(500, "internal server error"));
