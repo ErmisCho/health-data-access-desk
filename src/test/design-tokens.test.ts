@@ -32,6 +32,10 @@ describe.each([":root", ".dark"])("%s text contrast", (selector) => {
   const tokens = { ...palette(":root"), ...palette(selector) };
   const pairs = [
     ["foreground", "background"],
+    ["foreground", "landing"],
+    ["muted-foreground", "landing"],
+    ["primary", "landing"],
+    ["accent", "landing"],
     ["card-foreground", "card"],
     ["popover-foreground", "popover"],
     ["primary-foreground", "primary"],
