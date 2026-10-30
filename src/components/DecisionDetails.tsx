@@ -42,7 +42,6 @@ export function DecisionDetails({
         </Button>
       </div>
       <LifecycleStepper
-        current={result.needs_review ? "Staff review" : result.status === "decided" ? "Fulfilled" : "Decided"}
         needsReview={!!result.needs_review}
         timeline={result.timeline}
       />

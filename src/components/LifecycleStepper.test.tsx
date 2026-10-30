@@ -5,14 +5,14 @@ import type { TimelineEvent } from "@/lib/ehds";
 
 afterEach(cleanup);
 
-const AT = "2026-10-30T12:00:00Z";
+const AT = "2026-10-30T12:00:00.000Z";
 
 function timeline(...statuses: TimelineEvent["status"][]): TimelineEvent[] {
   return statuses.map((status) => ({ status, at: AT }));
 }
 
 describe("LifecycleStepper", () => {
-  it("statistics path: shows Submitted→Assessed→Decided→Fulfilled, Fulfilled is current", () => {
+  it("statistics path: shows Submitted→Assessed→Decided→Fulfilled, Fulfilled is Complete", () => {
     render(
       <LifecycleStepper
         timeline={timeline("submitted", "assessed", "decided", "fulfilled")}
@@ -23,11 +23,11 @@ describe("LifecycleStepper", () => {
     expect(labels).toEqual(["Submitted", "Assessed", "Decided", "Fulfilled"]);
     // Staff review step is hidden for non-held requests.
     expect(screen.queryByText("Staff review")).not.toBeInTheDocument();
-    // Fulfilled is highlighted as current.
+    // Fulfilled is the terminal/last step — shows "Complete", not "Current".
     const fulfilled = items[items.length - 1];
     expect(fulfilled).toHaveAttribute("aria-current", "step");
-    expect(fulfilled.querySelector("span")).toHaveClass("font-semibold");
-    // All previous steps show "Complete".
+    expect(fulfilled.querySelector(".text-muted-foreground")).toHaveTextContent("Complete");
+    // All previous steps also show "Complete".
     items.slice(0, -1).forEach((li) =>
       expect(li.querySelector(".text-muted-foreground")).toHaveTextContent("Complete"),
     );
@@ -35,39 +35,39 @@ describe("LifecycleStepper", () => {
     expect(screen.getAllByRole("time")).toHaveLength(4);
   });
 
-  it("SPE path: shows Submitted→Assessed→Decided→Fulfilled with timestamps", () => {
+  it("SPE path: Fulfilled shows Complete and timestamps", () => {
     render(
       <LifecycleStepper
         timeline={timeline("submitted", "assessed", "decided", "fulfilled")}
       />,
     );
-    // Same shape as statistics — fulfilled is last.
     expect(screen.getByText("Fulfilled")).toBeInTheDocument();
     expect(screen.queryByText("Staff review")).not.toBeInTheDocument();
     expect(screen.getAllByRole("time")).toHaveLength(4);
+    // Fulfilled is the terminal step → Complete.
+    const items = screen.getAllByRole("listitem");
+    expect(items[items.length - 1].querySelector(".text-muted-foreground")).toHaveTextContent("Complete");
   });
 
-  it("reject path: shows Submitted→Assessed→Decided→Fulfilled (Fulfilled pending, Decided current)", () => {
+  it("reject path: shows Submitted→Assessed→Decided only; no Fulfilled; Decided is Complete", () => {
     render(
       <LifecycleStepper
         timeline={timeline("submitted", "assessed", "decided")}
       />,
     );
     const items = screen.getAllByRole("listitem");
-    // Staff review is hidden (no hold), but Fulfilled is shown as pending.
-    expect(items).toHaveLength(4);
+    // Fulfilled is hidden for REJECT (decided is terminal with no fulfilled in timeline).
+    expect(items).toHaveLength(3);
     const labels = items.map((li) => li.querySelector("span")?.textContent);
-    expect(labels).toEqual(["Submitted", "Assessed", "Decided", "Fulfilled"]);
+    expect(labels).toEqual(["Submitted", "Assessed", "Decided"]);
+    expect(screen.queryByText("Fulfilled")).not.toBeInTheDocument();
     expect(screen.queryByText("Staff review")).not.toBeInTheDocument();
-    // Decided is the last recorded step → current.
-    const decidedItem = items.find((li) => li.querySelector("span")?.textContent === "Decided")!;
-    expect(decidedItem).toHaveAttribute("aria-current", "step");
-    // Fulfilled is pending.
-    const fulfilledItem = items.find((li) => li.querySelector("span")?.textContent === "Fulfilled")!;
-    expect(fulfilledItem.querySelector(".text-muted-foreground")).toHaveTextContent("Pending");
+    // Decided is the terminal step → aria-current + Complete.
+    expect(items[2]).toHaveAttribute("aria-current", "step");
+    expect(items[2].querySelector(".text-muted-foreground")).toHaveTextContent("Complete");
   });
 
-  it("held path: shows Submitted→Assessed→Staff review as current (Decided/Fulfilled pending)", () => {
+  it("held path: Staff review is Current; Decided and Fulfilled are Pending", () => {
     render(
       <LifecycleStepper
         timeline={timeline("submitted", "assessed", "staff_review")}
@@ -80,7 +80,9 @@ describe("LifecycleStepper", () => {
       (li) => li.querySelector("span")?.textContent === "Staff review",
     )!;
     expect(staffReviewItem).toHaveAttribute("aria-current", "step");
-    // Decided and Fulfilled are pending (not in timeline), so they show "Pending".
+    // Staff review is not terminal — shows "Current".
+    expect(staffReviewItem.querySelector(".text-muted-foreground")).toHaveTextContent("Current");
+    // Decided and Fulfilled are pending.
     const decidedItem = items.find((li) => li.querySelector("span")?.textContent === "Decided");
     expect(decidedItem?.querySelector(".text-muted-foreground")).toHaveTextContent("Pending");
     const fulfilledItem = items.find((li) => li.querySelector("span")?.textContent === "Fulfilled");
@@ -99,7 +101,6 @@ describe("LifecycleStepper", () => {
     );
     const times = screen.getAllByRole("time");
     expect(times).toHaveLength(3);
-    // Each time element has a dateTime attribute.
     times.forEach((t) => expect(t).toHaveAttribute("dateTime"));
   });
 
@@ -114,9 +115,7 @@ describe("LifecycleStepper", () => {
         ]}
       />,
     );
-    // No <time> elements when all at values are empty.
     expect(screen.queryAllByRole("time")).toHaveLength(0);
-    // Steps are still rendered.
     expect(screen.getByText("Fulfilled")).toBeInTheDocument();
   });
 
@@ -124,11 +123,10 @@ describe("LifecycleStepper", () => {
     render(<LifecycleStepper current="Staff review" needsReview />);
     const li = screen.getByText("Staff review").closest("li");
     expect(li).toHaveAttribute("aria-current", "step");
-    // Staff review should be visible (needsReview=true).
     expect(screen.getByText("Staff review")).toBeInTheDocument();
   });
 
-  it("full lifecycle held→approved: all 5 steps visible, fulfilled is current", () => {
+  it("full lifecycle held→approved: all 5 steps visible, Fulfilled is Complete", () => {
     render(
       <LifecycleStepper
         timeline={timeline(
@@ -144,11 +142,12 @@ describe("LifecycleStepper", () => {
     expect(items).toHaveLength(5);
     const fulfilled = items[items.length - 1];
     expect(fulfilled).toHaveAttribute("aria-current", "step");
+    // Terminal step → Complete.
+    expect(fulfilled.querySelector(".text-muted-foreground")).toHaveTextContent("Complete");
     expect(screen.getByText("Staff review")).toBeInTheDocument();
-    // Staff review and all earlier steps are "Complete".
-    ["Submitted", "Assessed", "Staff review", "Decided"].forEach((label) => {
-      const li = items.find((item) => item.querySelector("span")?.textContent === label)!;
-      expect(li?.querySelector(".text-muted-foreground")).toHaveTextContent("Complete");
-    });
+    // All earlier steps show "Complete".
+    items.slice(0, -1).forEach((li) =>
+      expect(li.querySelector(".text-muted-foreground")).toHaveTextContent("Complete"),
+    );
   });
 });
