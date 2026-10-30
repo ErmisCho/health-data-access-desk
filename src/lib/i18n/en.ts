@@ -3,6 +3,22 @@
  * Every key here MUST also exist in de.ts (TypeScript will error if missing).
  */
 export const en = {
+  "chart.title": "Result charts",
+  "chart.metric": "Chart metric",
+  "chart.total": "Total",
+  "chart.bars": "Values by group",
+  "chart.map": "Austria’s nine regions",
+  "chart.tableFallback":
+    "Exact values and all metrics are available in the table below. Focus a bar or region for details.",
+  "chart.schematic":
+    "Schematic boundaries. V: Vorarlberg; T: Tirol; S: Salzburg; OÖ: Oberösterreich; NÖ: Niederösterreich; W: Wien; B: Burgenland; St: Steiermark; K: Kärnten.",
+  "chart.legend": "Colour scale: low to high",
+  "chart.suppressed":
+    "Hatched grey: withheld (<10 / suppressed); no value plotted. Solid grey: unavailable.",
+  "chart.noValues": "No disclosed numeric values for this metric.",
+  "table.scroll": "table, scroll horizontally if needed",
+  "table.suppressed":
+    "Value withheld to protect privacy. Small counts (<10) and suppressed statistics are not disclosed.",
   // ── Site header ─────────────────────────────────────────────────────────────
   "nav.demoService": "Demonstration service · Health Data Access Body",
   "nav.settings": "Language and access body",

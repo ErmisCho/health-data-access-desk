@@ -112,6 +112,7 @@ export function createDecisionLetter(
           label: t("letter.memo.label"),
         }
       : undefined,
+    statisticalRows: rows,
     table: rows.length
       ? {
           headers: [

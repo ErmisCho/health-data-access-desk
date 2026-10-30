@@ -5,6 +5,7 @@ import { answerColumns, answerRows, isPercentage, metricLabel } from "@/lib/answ
 import { DataCell, DataTable } from "./DataTable";
 import { EmptyState } from "./States";
 import { useLang, useT } from "@/lib/i18n";
+import { ResultsChart } from "./ResultsChart";
 
 export function ResultsTable({ answer }: { answer: Answer | null }) {
   const t = useT();
@@ -16,6 +17,7 @@ export function ResultsTable({ answer }: { answer: Answer | null }) {
   if (!rows.length) return <EmptyState title={t("results.noStats")} />;
   return (
     <div>
+      <ResultsChart rows={rows} columns={columns} />
       <label className="mb-3 flex items-center gap-3 text-sm">
         {t("results.showPercentages")}
         <select

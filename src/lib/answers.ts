@@ -7,6 +7,9 @@ export interface AnswerRow {
   groups: string[];
   metrics: Record<string, AnswerValue>;
 }
+export function isSuppressed(value: AnswerValue | undefined): boolean {
+  return typeof value === "string" && /^(?:<\s*10|suppressed)$/i.test(value.trim());
+}
 export function answerRows(answer: Answer | null): AnswerRow[] {
   if (!answer) return [];
   const rows: AnswerRow[] = [];

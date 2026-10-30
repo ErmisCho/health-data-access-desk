@@ -4,6 +4,7 @@ import { DecisionBadge } from "./DecisionBadge";
 import { LifecycleStepper } from "./LifecycleStepper";
 import { LegalQuote } from "./LegalQuote";
 import { DataTable } from "./DataTable";
+import { ResultsChart } from "./ResultsChart";
 import { Button } from "./ui/button";
 import { ErrorState } from "./States";
 import { useLang, useT } from "@/lib/i18n";
@@ -127,28 +128,31 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
             {t("letter.results.title")}
           </h2>
           {letter.table ? (
-            <DataTable caption={t("letter.statResults.caption")}>
-              <thead>
-                <tr>
-                  {letter.table.headers.map((header, i) => (
-                    <th scope="col" key={i} className="p-2 text-left">
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {letter.table.rows.map((row, i) => (
-                  <tr key={i} className="border-b border-border">
-                    {row.map((cell, j) => (
-                      <td key={j} className="p-3 font-mono">
-                        {cell}
-                      </td>
+            <>
+              <ResultsChart rows={letter.statisticalRows} />
+              <DataTable caption={t("letter.statResults.caption")}>
+                <thead>
+                  <tr>
+                    {letter.table.headers.map((header, i) => (
+                      <th scope="col" key={i} className="p-2 text-left">
+                        {header}
+                      </th>
                     ))}
                   </tr>
-                ))}
-              </tbody>
-            </DataTable>
+                </thead>
+                <tbody>
+                  {letter.table.rows.map((row, i) => (
+                    <tr key={i} className="border-b border-border">
+                      {row.map((cell, j) => (
+                        <td key={j} className="p-3 font-mono">
+                          {cell}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </DataTable>
+            </>
           ) : (
             <p>{letter.results}</p>
           )}

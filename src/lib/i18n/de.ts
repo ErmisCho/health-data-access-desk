@@ -320,6 +320,22 @@ export const de: { [K in keyof EnDict]: string } = {
   "results.group": "Gruppe",
   "results.groupN": "Gruppe",
   "results.noStats": "Keine statistischen Ergebnisse verfügbar.",
+  "chart.title": "Ergebnisdiagramme",
+  "chart.metric": "Kennzahl im Diagramm",
+  "chart.total": "Gesamt",
+  "chart.bars": "Werte nach Gruppe",
+  "chart.map": "Österreichs neun Bundesländer",
+  "chart.tableFallback":
+    "Die genauen Werte und alle Kennzahlen stehen in der Tabelle darunter. Fokussieren Sie einen Balken oder ein Bundesland für Details.",
+  "chart.schematic":
+    "Schematische Grenzen. V: Vorarlberg; T: Tirol; S: Salzburg; OÖ: Oberösterreich; NÖ: Niederösterreich; W: Wien; B: Burgenland; St: Steiermark; K: Kärnten.",
+  "chart.legend": "Farbskala: niedrig bis hoch",
+  "chart.suppressed":
+    "Grau schraffiert: zurückgehalten (<10 / suppressed); kein Wert dargestellt. Einfarbig grau: nicht verfügbar.",
+  "chart.noValues": "Keine offengelegten numerischen Werte für diese Kennzahl.",
+  "table.scroll": "Tabelle, bei Bedarf horizontal scrollen",
+  "table.suppressed":
+    "Wert zum Schutz der Privatsphäre zurückgehalten. Kleine Fallzahlen (<10) und unterdrückte Statistiken werden nicht offengelegt.",
 
   // ── Page titles (document.title) ─────────────────────────────────────────────
   "page.title.home": "EHDS Access Desk \u2014 Kann dieser Gesundheitsdatenantrag genehmigt werden?",

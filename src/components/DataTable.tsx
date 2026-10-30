@@ -1,14 +1,16 @@
 import { useState, type ReactNode } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { cn } from "@/lib/utils";
-import { formatValue } from "@/lib/answers";
+import { formatValue, isSuppressed } from "@/lib/answers";
+import { useT } from "@/lib/i18n";
 export { formatValue } from "@/lib/answers";
 
 export function DataTable({ caption, children }: { caption: string; children: ReactNode }) {
+  const t = useT();
   return (
     <div
       role="region"
-      aria-label={`${caption} table, scroll horizontally if needed`}
+      aria-label={`${caption} ${t("table.scroll")}`}
       tabIndex={0}
       className="relative overflow-x-auto rounded-lg border border-border bg-card"
     >
@@ -27,7 +29,8 @@ export function DataCell({
   value: string | number | undefined;
   percentage?: boolean;
 }) {
-  const suppressed = typeof value === "string" && /^(?:<\s*10|suppressed)$/i.test(value.trim());
+  const suppressed = isSuppressed(value);
+  const t = useT();
   const [open, setOpen] = useState(false);
   return (
     <td className={cn("p-3 text-right font-mono", suppressed && "suppressed-cell")}>
@@ -43,10 +46,7 @@ export function DataCell({
                 {value}
               </button>
             </TooltipTrigger>
-            <TooltipContent className="max-w-60 font-sans">
-              Value withheld to protect privacy. Small counts (&lt;10) and suppressed statistics are
-              not disclosed.
-            </TooltipContent>
+            <TooltipContent className="max-w-60 font-sans">{t("table.suppressed")}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       ) : (
