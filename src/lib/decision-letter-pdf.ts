@@ -1,4 +1,4 @@
-import { jsPDF } from "jspdf";
+import { jsPDF } from "jspdf/dist/jspdf.es.min.js";
 import type { DecisionLetter } from "./decision-letter";
 
 // Only the displayed letter model is accepted here, never a raw request or decision response.
