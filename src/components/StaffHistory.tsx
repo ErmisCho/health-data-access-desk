@@ -18,6 +18,28 @@ import { StaffSignIn, StaffSignedInBadge, type StaffSession } from "./StaffSignI
 
 const OVERRIDE_DECISIONS: Decision[] = ["REJECT", "APPROVE_STATISTICAL", "APPROVE_SPE"];
 
+// One-click reasons: each sets the action (and override decision) and fills the editable reason.
+const REASON_TEMPLATES = [
+  { key: "staff.template.approve", action: "approve", decision: undefined },
+  { key: "staff.template.reject", action: "override", decision: "REJECT" },
+  { key: "staff.template.statistics", action: "override", decision: "APPROVE_STATISTICAL" },
+  { key: "staff.template.spe", action: "override", decision: "APPROVE_SPE" },
+] as const;
+
+const BADGE_KEY = {
+  REJECT: "badge.REJECT",
+  APPROVE_STATISTICAL: "badge.APPROVE_STATISTICAL",
+  APPROVE_SPE: "badge.APPROVE_SPE",
+} as const;
+
+// shortcut: the 3-month limit of Art. 68(4)/69(4) counted from submission; the saved result carries the exact deadline.
+function dueDate(submitted: string): Date | null {
+  const d = new Date(submitted);
+  if (isNaN(d.getTime())) return null;
+  d.setMonth(d.getMonth() + 3);
+  return d;
+}
+
 function ReviewForm({
   row,
   onDone,
@@ -90,12 +112,28 @@ function ReviewForm({
           >
             {OVERRIDE_DECISIONS.map((d) => (
               <option key={d} value={d}>
-                {d}
+                {t(BADGE_KEY[d])}
               </option>
             ))}
           </select>
         </label>
       )}
+      <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={t("staff.template.label")}>
+        {REASON_TEMPLATES.map((tpl) => (
+          <button
+            key={tpl.key}
+            type="button"
+            onClick={() => {
+              setAction(tpl.action);
+              if (tpl.decision) setDecision(tpl.decision);
+              setReason(t(tpl.key));
+            }}
+            className="rounded-full border border-input bg-card px-3 py-1 text-xs hover:bg-muted"
+          >
+            {t(`${tpl.key}.label`)}
+          </button>
+        ))}
+      </div>
       <label className="mt-3 block text-sm">
         <span>
           {t("staff.review.reason")}{" "}
@@ -193,8 +231,9 @@ export function StaffHistory() {
     };
   }, [selectedId, history]);
 
-  const queuedRequests =
-    history?.requests.filter((r) => r.status === "staff_review") ?? [];
+  const queuedRequests = (history?.requests.filter((r) => r.status === "staff_review") ?? [])
+    .slice()
+    .sort((a, b) => a.submitted_at.localeCompare(b.submitted_at));
 
   function handleReviewDone() {
     setRefresh((n) => n + 1);
@@ -278,6 +317,12 @@ export function StaffHistory() {
                       </span>
                       <DecisionBadge decision={row.decision} />
                       <span className="text-xs text-muted-foreground">{fmtDate(row.submitted_at, locale)}</span>
+                      {dueDate(row.submitted_at) && (
+                        <span className="text-xs font-medium">
+                          {t("staff.queue.due")}{" "}
+                          {dueDate(row.submitted_at)!.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })}
+                        </span>
+                      )}
                     </div>
                     <ReviewForm row={row} onDone={handleReviewDone} />
                   </div>

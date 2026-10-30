@@ -1,4 +1,5 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { listRequests } from "@/lib/ehds";
 import { useHdab } from "@/lib/hdab";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown, Globe, Menu, Shield, UserRound } from "lucide-react";
@@ -91,6 +92,16 @@ export function SiteHeader() {
   const t = useT();
   const { role, setRole, needsSetup, completeSetup } = usePreferences();
   const settingsButton = useRef<HTMLButtonElement>(null);
+  const [waiting, setWaiting] = useState(0);
+  useEffect(() => {
+    setWaiting(0);
+    if (role !== "staff") return;
+    let active = true;
+    listRequests()
+      .then((h) => { if (active) setWaiting(h.requests.filter((r) => r.status === "staff_review").length); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [role]);
   const links = [
     ["/how-we-decide", "nav.howWeDecide"],
     ["/examples", "nav.examples"],
@@ -125,11 +136,16 @@ export function SiteHeader() {
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                aria-label={`${t("nav.changeRole")}: ${t(`desk.role.${role}`)}`}
+                aria-label={`${t("nav.changeRole")}: ${t(`desk.role.${role}`)}${waiting > 0 ? `, ${waiting} ${t("staff.queue.awaiting")}` : ""}`}
                 className="inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded border border-border px-2 text-sm font-medium capitalize hover:bg-muted sm:gap-2"
               >
                 <UserRound aria-hidden="true" className="size-4 shrink-0" />
                 {t(`desk.role.${role}`)}
+                {waiting > 0 && (
+                  <span aria-hidden="true" className="rounded-full bg-amber-600 px-1.5 text-xs font-semibold text-white">
+                    {waiting}
+                  </span>
+                )}
                 <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
               </button>
             </DropdownMenuTrigger>

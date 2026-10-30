@@ -443,3 +443,32 @@ it("audit log renders staff actions with who, what, when columns", async () => {
   expect(within(auditTable).getByText("Prohibited purpose.")).toBeInTheDocument();
   expect(within(auditTable).getByText("R01")).toBeInTheDocument();
 });
+
+it("lists waiting requests oldest first with a due date", async () => {
+  const newer = { ...heldRow, request_id: "R09", submitted_at: "2026-10-30T09:00:00Z" };
+  invoke.mockResolvedValueOnce({
+    data: { requests: [newer, heldRow], downloads: [], staff_actions: [] },
+    error: null,
+  });
+  invoke.mockResolvedValue({ data: saved, error: null });
+  await renderAndSignIn();
+  const queue = await screen.findByRole("region", { name: /Waiting for you/ });
+  const ids = within(queue).getAllByText(/^R0[19]$/).map((el) => el.textContent);
+  expect(ids).toEqual(["R01", "R09"]);
+  expect(within(queue).getAllByText(/^Due/)[0]).toHaveTextContent("29 January 2027");
+});
+
+it("a reason template sets the override and fills an editable reason", async () => {
+  invoke.mockResolvedValueOnce({
+    data: { requests: [heldRow], downloads: [], staff_actions: [] },
+    error: null,
+  });
+  invoke.mockResolvedValue({ data: saved, error: null });
+  await renderAndSignIn();
+  fireEvent.click(await screen.findByRole("button", { name: "Reject: prohibited use" }));
+  expect(screen.getByRole("radio", { name: /Override/i })).toBeChecked();
+  const textarea = screen.getByPlaceholderText(/Explain the basis/i) as HTMLTextAreaElement;
+  expect(textarea.value).toMatch(/prohibited use in Article 54/);
+  fireEvent.change(textarea, { target: { value: "Edited" } });
+  expect(textarea.value).toBe("Edited");
+});
