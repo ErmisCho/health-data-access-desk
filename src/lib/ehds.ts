@@ -27,10 +27,19 @@ export interface DecisionResult {
   reason: string;
   answer: Answer | null;
   needs_review?: boolean;
+  status?: "staff_review" | "decided";
   spe_schema?: string;
   parse_errors?: { definition: string; reason: string }[];
   explanation?: DecisionExplanation;
   population?: { eligible_patients: number };
+}
+export interface StaffAction {
+  request_id: string;
+  action: "approve" | "override";
+  decision: Decision;
+  reason: string;
+  staff_name: string;
+  created_at: string;
 }
 export interface RequestSummary {
   request_id: string;
@@ -38,11 +47,22 @@ export interface RequestSummary {
   decision: Decision;
   articles: string[];
   needs_review: boolean;
+  status: "staff_review" | "decided";
   spe_schema: string | null;
+  last_staff_action: StaffAction | null;
 }
 export interface RequestHistory {
   requests: RequestSummary[];
   downloads: { request_id: string; attempted_at: string }[];
+  staff_actions: StaffAction[];
+}
+
+export interface StaffReviewBody {
+  action: "approve" | "override";
+  request_id: string;
+  decision?: Decision;
+  reason: string;
+  staff_name: string;
 }
 
 export function mapEdgeResponse(data: DecisionResult): DecisionResult {
@@ -98,6 +118,13 @@ export async function listRequests(): Promise<RequestHistory> {
 export async function getRequest(id: string): Promise<DecisionResult> {
   const data = await requireData<DecisionResult>(
     await supabase.functions.invoke(`requests?id=${encodeURIComponent(id)}`, { method: "GET" }),
+  );
+  return mapEdgeResponse(data);
+}
+
+export async function reviewRequest(body: StaffReviewBody): Promise<DecisionResult> {
+  const data = await requireData<DecisionResult>(
+    await supabase.functions.invoke("requests/review", { body }),
   );
   return mapEdgeResponse(data);
 }
