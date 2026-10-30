@@ -6,10 +6,12 @@ import { LegalQuote } from "./LegalQuote";
 import { DataTable } from "./DataTable";
 import { Button } from "./ui/button";
 import { ErrorState } from "./States";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
+import { localizeBackendText } from "@/lib/i18n/translations";
 
 export function DecisionLetter({ letter }: { letter: Letter }) {
   const t = useT();
+  const { lang } = useLang();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function download() {
@@ -17,7 +19,7 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
     setError("");
     try {
       const { buildDecisionLetterPdf } = await import("@/lib/decision-letter-pdf");
-      buildDecisionLetterPdf(letter, t).save(`decision-${letter.reference}.pdf`);
+      buildDecisionLetterPdf(letter, t, lang).save(`decision-${letter.reference}.pdf`);
     } catch {
       setError(t("letter.pdfError"));
     } finally {
@@ -73,7 +75,7 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
           <h2 id="letter-why" className="text-xl font-semibold">
             {t("letter.why.title")}
           </h2>
-          <p className="whitespace-pre-wrap">{letter.rule}</p>
+          <p className="whitespace-pre-wrap">{localizeBackendText(letter.rule, lang)}</p>
           {!!letter.triggers.length && (
             <ul className="space-y-2">
               {letter.triggers.map((phrase, i) => (

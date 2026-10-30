@@ -13,6 +13,7 @@ import { DecisionBadge } from "./DecisionBadge";
 import { DataTable } from "./DataTable";
 import { EmptyState, ErrorState } from "./States";
 import { useT, useLang } from "@/lib/i18n";
+import { localizeBackendText } from "@/lib/i18n/translations";
 
 const OVERRIDE_DECISIONS: Decision[] = ["REJECT", "APPROVE_STATISTICAL", "APPROVE_SPE"];
 
@@ -415,7 +416,7 @@ export function StaffHistory() {
                         <td className="p-3">
                           <DecisionBadge decision={a.decision} />
                         </td>
-                        <td className="max-w-xs p-3 text-sm">{a.reason}</td>
+                        <td className="max-w-xs p-3 text-sm">{localizeBackendText(a.reason, lang)}</td>
                         <td className="p-3">
                          {fmtDate(a.created_at, locale)}
                         </td>

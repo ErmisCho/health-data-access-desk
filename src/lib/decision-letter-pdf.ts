@@ -1,6 +1,7 @@
 import { jsPDF } from "jspdf/dist/jspdf.es.min.js";
 import type { DecisionLetter } from "./decision-letter";
-import type { TranslationKey } from "./i18n";
+import { localizeBackendText } from "./i18n/translations";
+import type { Lang, TranslationKey } from "./i18n";
 
 type TFn = (key: TranslationKey) => string;
 
@@ -23,6 +24,7 @@ function makeDefaultT(): TFn {
 export function buildDecisionLetterPdf(
   letter: DecisionLetter,
   t: TFn = makeDefaultT(),
+  lang: Lang = "en",
 ): jsPDF {
   const doc = new jsPDF({
     orientation: (letter.table?.headers.length ?? 0) > 6 ? "landscape" : "portrait",
@@ -96,14 +98,14 @@ export function buildDecisionLetterPdf(
   paragraph(letter.verdict);
   paragraph(letter.decision, true);
   heading(t("pdf.heading.why"));
-  paragraph(letter.rule);
+  paragraph(localizeBackendText(letter.rule, lang));
   letter.triggers.forEach((phrase) => paragraph(`"${phrase}"`));
   heading(t("pdf.heading.legalBasis"));
   if (!letter.articles.length) paragraph(letter.legalFallback);
   for (const article of letter.articles) {
-    paragraph(`${article.ref} · ${article.title}`, true);
+    paragraph(`${article.ref} · ${localizeBackendText(article.title, lang)}`, true);
     paragraph(article.quote, false, article.applies);
-    if (article.summary) paragraph(article.summary);
+    if (article.summary) paragraph(localizeBackendText(article.summary, lang));
   }
   heading(t("pdf.heading.whatWeCounted"));
   paragraph(letter.plan);

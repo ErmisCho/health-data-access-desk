@@ -3,7 +3,8 @@ import { downloadRequest, SAMPLE_ENTRIES, submitRequest, type DecisionResult } f
 import { answerRows } from "@/lib/answers";
 import { DecisionDetails } from "./DecisionDetails";
 import { EmptyState, ErrorState } from "./States";
-import { useT } from "@/lib/i18n";
+import { useLang, useT, type Lang } from "@/lib/i18n";
+import { localizeBackendText } from "@/lib/i18n/translations";
 
 const scenarios = [
   { key: "purpose", id: "R02", labelKey: "demo.scenario.purpose" },
@@ -27,14 +28,14 @@ interface Outcome {
 
 function pointAt(
   { scenario, result, download }: Outcome,
-  t: (k: Parameters<ReturnType<typeof useT>>[0]) => string,
+  lang: Lang,
 ): string {
   const metric = (group: string, key: string) =>
     answerRows(result.answer).find((row) => row.groups.includes(group))?.metrics[key] ??
     "Not provided";
   switch (scenario.key) {
     case "request":
-      return result.reason;
+      return localizeBackendText(result.reason, lang);
     case "purpose":
       return `Numerical answer: ${result.answer === null ? "null (no numerical answer)" : "an answer was returned — inspect the result"}.`;
     case "statistics":
@@ -49,7 +50,7 @@ function pointAt(
     }
     case "download":
       return download
-        ? `HTTP ${download.status} · ${download.message}`
+        ? `HTTP ${download.status} · ${localizeBackendText(download.message, lang)}`
         : "Download refusal not confirmed. See the error and decision below.";
     case "downgrade":
       return `Requested pseudonymised records → returned ${result.decision}. Ages 18–49: ${metric("18-49", "adults_with_hypertension")} adults with hypertension; ACE inhibitor (%): ${metric("18-49", "ace_inhibitor_pct")}; ARB (%): ${metric("18-49", "arb_pct")}.`;
@@ -58,6 +59,7 @@ function pointAt(
 
 export function DemoPanel() {
   const t = useT();
+  const { lang } = useLang();
   const [sampleId, setSampleId] = useState(SAMPLE_ENTRIES[0]!.id);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [running, setRunning] = useState<Scenario | null>(null);
@@ -168,7 +170,7 @@ export function DemoPanel() {
               >
                 <h3 className="font-semibold">{t("demo.pointAt.heading")}</h3>
                 <p className="mt-2 break-words font-mono text-sm">
-                  {pointAt(outcome, t)}
+                  {pointAt(outcome, lang)}
                 </p>
                 {outcome.scenario.key === "opt-outs" && (
                   <p className="mt-2 text-sm text-muted-foreground">

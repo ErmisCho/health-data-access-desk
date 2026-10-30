@@ -16,7 +16,8 @@ import {
 import { DecisionDetails } from "@/components/DecisionDetails";
 import { DecisionBadge } from "@/components/DecisionBadge";
 import { ErrorState, EmptyState } from "@/components/States";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
+import { localizeBackendText } from "@/lib/i18n/translations";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -110,6 +111,7 @@ const textareaCls =
 // ---------------------------------------------------------------------------
 function WeUnderstoodPanel({ preview }: { preview: PreviewResult }) {
   const t = useT();
+  const { lang } = useLang();
   return (
     <section
       aria-label={t("form.weUnderstood")}
@@ -117,7 +119,8 @@ function WeUnderstoodPanel({ preview }: { preview: PreviewResult }) {
     >
       <h3 className="font-semibold text-sm">{t("form.weUnderstood")}</h3>
       <DecisionBadge decision={preview.decision} />
-      <p className="text-sm">{preview.reason}</p>
+      <p className="text-sm">{localizeBackendText(preview.reason, lang)}</p>
+      {preview.rule && <p className="text-sm">{localizeBackendText(preview.rule, lang)}</p>}
       {preview.plan_summary && (
         <p className="text-sm text-muted-foreground">
           <span className="font-medium text-foreground">{t("form.weUnderstood.plan")}</span>
@@ -157,6 +160,7 @@ export function GuidedForm({
   onResult: (result: DecisionResult, request: AccessRequest) => void;
 }) {
   const t = useT();
+  const { lang } = useLang();
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<AccessRequest>(blankRequest());
   const [preview, setPreview] = useState<PreviewResult | null>(null);
@@ -632,7 +636,7 @@ export function GuidedForm({
                               role="alert"
                               className="text-xs text-destructive"
                             >
-                              {unreadableByIndex[i]}
+                              {localizeBackendText(unreadableByIndex[i] ?? "", lang)}
                             </p>
                           )}
                         </div>

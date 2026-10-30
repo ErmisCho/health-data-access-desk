@@ -1,5 +1,6 @@
 import type { LegalArticle } from "@/lib/ehds";
 import { useLang, useT } from "@/lib/i18n";
+import { localizeBackendText } from "@/lib/i18n/translations";
 
 export function LegalQuote({ article }: { article: LegalArticle }) {
   const t = useT();
@@ -12,7 +13,7 @@ export function LegalQuote({ article }: { article: LegalArticle }) {
           {article.ref ||
             (article.number.startsWith("Art.") ? article.number : `Art. ${article.number}`)}
         </span>{" "}
-        · {article.title}
+        · {localizeBackendText(article.title, lang)}
         {lang === "de" && (
           <span className="ml-2 text-xs font-normal text-muted-foreground">
             {t("legal.officialLabel")}
@@ -32,7 +33,7 @@ export function LegalQuote({ article }: { article: LegalArticle }) {
           )}
         </blockquote>
       )}
-      {article.summary && <p className="mt-3 text-sm text-muted-foreground">{article.summary}</p>}
+      {article.summary && <p className="mt-3 text-sm text-muted-foreground">{localizeBackendText(article.summary, lang)}</p>}
     </figure>
   );
 }

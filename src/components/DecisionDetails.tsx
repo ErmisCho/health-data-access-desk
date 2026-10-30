@@ -7,7 +7,8 @@ import { LifecycleStepper } from "./LifecycleStepper";
 import { ExplanationPanel } from "./ExplanationPanel";
 import { ErrorState } from "./States";
 import { Button } from "./ui/button";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
+import { localizeBackendText } from "@/lib/i18n/translations";
 
 export function DecisionDetails({
   result,
@@ -21,6 +22,7 @@ export function DecisionDetails({
   request?: { purpose?: string; question?: string } | undefined;
 }) {
   const t = useT();
+  const { lang } = useLang();
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const cohort = result.answer?.["cohort_size"];
@@ -73,7 +75,7 @@ export function DecisionDetails({
         <p className="text-xs uppercase tracking-wider text-muted-foreground">
           {t("decision.reason")}
         </p>
-        <p className="mt-1">{result.reason}</p>
+        <p className="mt-1">{localizeBackendText(result.reason, lang)}</p>
       </div>
       {result.explanation && (
         <ExplanationPanel
@@ -95,7 +97,7 @@ export function DecisionDetails({
           <ul className="list-disc pl-5">
             {result.parse_errors.map((error, i) => (
               <li key={i}>
-                {error.definition}: {error.reason}
+                {error.definition}: {localizeBackendText(error.reason, lang)}
               </li>
             ))}
           </ul>
@@ -132,7 +134,7 @@ export function DecisionDetails({
               >
                 {busy ? t("decision.checking") : t("decision.download")}
               </button>
-              {message && <ErrorState>{message}</ErrorState>}
+              {message && <ErrorState>{localizeBackendText(message, lang)}</ErrorState>}
             </>
           ) : (
             <p className="mt-1">
