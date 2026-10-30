@@ -1,3 +1,6 @@
+import { en } from "./i18n/en";
+import { de } from "./i18n/de";
+import type { Lang } from "./i18n";
 import type { Answer, AnswerValue } from "./ehds";
 
 export interface AnswerRow {
@@ -46,8 +49,13 @@ export function answerColumns(rows: AnswerRow[], showPercentages: boolean): stri
   );
 }
 
-export function metricLabel(key: string): string {
-  return key.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
+export function metricLabel(key: string, lang: Lang = "en"): string {
+  const dictionary = lang === "de" ? de : en;
+  const labelKey = `results.metric.${key}`;
+  if (Object.hasOwn(dictionary, labelKey))
+    return dictionary[labelKey as keyof typeof dictionary];
+  // Readable labels supplied as answer keys pass through; future raw keys get a fallback.
+  return key.replace(/_pct$/, " (%)").replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 }
 
 export function formatValue(value: string | number | undefined, percentage = false): string {

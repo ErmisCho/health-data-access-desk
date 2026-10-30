@@ -89,8 +89,8 @@ const BACKEND_DE: Record<string, string> = {
   "Lists the allowed purposes for accessing health data for secondary use, including research, statistics, education, and quality improvement.":
     "Listet die zulässigen Zwecke für den Zugang zu Gesundheitsdaten zur Sekundärnutzung auf, einschließlich Forschung, Statistik, Bildung und Qualitätsverbesserung.",
 
-  "Prohibits using health data for insurance decisions, advertising, harmful products, employee profiling, or third-party sharing outside the permit.":
-    "Verbietet die Nutzung von Gesundheitsdaten für Versicherungsentscheidungen, Werbung, schädliche Produkte, Mitarbeiterprofilierung oder Weitergabe an Dritte außerhalb der Genehmigung.",
+  "Prohibits using health data for detrimental decisions about people; decisions about job offers, less favourable goods or services, insurance or credit, or other discriminatory decisions; advertising or marketing; developing harmful products or services; and activities conflicting with ethical provisions of national law.":
+    "Verbietet die Nutzung von Gesundheitsdaten für nachteilige Entscheidungen über Personen; Entscheidungen über Stellenangebote, ungünstigere Waren- oder Dienstleistungsbedingungen, Versicherungen oder Kredite oder andere diskriminierende Entscheidungen; Werbung oder Marketing; die Entwicklung schädlicher Produkte oder Dienstleistungen; und Tätigkeiten im Widerspruch zu ethischen Bestimmungen des nationalen Rechts.",
 
   "Requires that only the minimum necessary data be provided, in anonymised form unless pseudonymised data is justified.":
     "Verlangt, dass nur die minimal notwendigen Daten bereitgestellt werden, in anonymisierter Form, sofern pseudonymisierte Daten nicht gerechtfertigt sind.",
@@ -108,14 +108,14 @@ const BACKEND_DE: Record<string, string> = {
   "clinical / epidemiological / treatment-gap":
     "klinisch / epidemiologisch / Versorgungslücke",
 
-  "detrimental decisions about employees / re-identification":
-    "nachteilige Entscheidungen über Beschäftigte / Re-Identifizierung",
+  "job offers / discriminatory decisions (Art. 54(1)(b))":
+    "Stellenangebote / diskriminierende Entscheidungen (Art. 54(1)(b))",
 
   "development of alcoholic products":
     "Entwicklung von Alkoholprodukten",
 
-  "insurance premiums / insurance decisions":
-    "Versicherungsprämien / Versicherungsentscheidungen",
+  "insurance premiums / insurance decisions (Art. 54(1)(b))":
+    "Versicherungsprämien / Versicherungsentscheidungen (Art. 54(1)(b))",
 
   "passing data to third parties not in permit":
     "Weitergabe von Daten an Dritte, die nicht in der Genehmigung aufgeführt sind",

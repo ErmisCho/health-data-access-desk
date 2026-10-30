@@ -4,10 +4,11 @@ import { answerColumns, answerRows, isPercentage, metricLabel } from "@/lib/answ
 
 import { DataCell, DataTable } from "./DataTable";
 import { EmptyState } from "./States";
-import { useT } from "@/lib/i18n";
+import { useLang, useT } from "@/lib/i18n";
 
 export function ResultsTable({ answer }: { answer: Answer | null }) {
   const t = useT();
+  const { lang } = useLang();
   const [showPercentages, setShowPercentages] = useState(true);
   const rows = answerRows(answer);
   const columns = answerColumns(rows, showPercentages);
@@ -36,8 +37,8 @@ export function ResultsTable({ answer }: { answer: Answer | null }) {
               </th>
             ))}
             {columns.map((c) => (
-              <th scope="col" className="p-2 text-right" key={metricLabel(c)}>
-                {metricLabel(c)}
+              <th scope="col" className="p-2 text-right" key={c}>
+                {metricLabel(c, lang)}
               </th>
             ))}
           </tr>

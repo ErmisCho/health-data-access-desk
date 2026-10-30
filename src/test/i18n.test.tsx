@@ -234,11 +234,11 @@ describe("localizeBackendText", () => {
   it("translates the Art. 54 article summary to German", () => {
     expect(
       localizeBackendText(
-        "Prohibits using health data for insurance decisions, advertising, harmful products, employee profiling, or third-party sharing outside the permit.",
+        "Prohibits using health data for detrimental decisions about people; decisions about job offers, less favourable goods or services, insurance or credit, or other discriminatory decisions; advertising or marketing; developing harmful products or services; and activities conflicting with ethical provisions of national law.",
         "de",
       ),
     ).toBe(
-      "Verbietet die Nutzung von Gesundheitsdaten für Versicherungsentscheidungen, Werbung, schädliche Produkte, Mitarbeiterprofilierung oder Weitergabe an Dritte außerhalb der Genehmigung.",
+      "Verbietet die Nutzung von Gesundheitsdaten für nachteilige Entscheidungen über Personen; Entscheidungen über Stellenangebote, ungünstigere Waren- oder Dienstleistungsbedingungen, Versicherungen oder Kredite oder andere diskriminierende Entscheidungen; Werbung oder Marketing; die Entwicklung schädlicher Produkte oder Dienstleistungen; und Tätigkeiten im Widerspruch zu ethischen Bestimmungen des nationalen Rechts.",
     );
   });
 
@@ -253,9 +253,9 @@ describe("localizeBackendText", () => {
     );
   });
 
-  it("translates the register category 'insurance premiums / insurance decisions' to German", () => {
-    expect(localizeBackendText("insurance premiums / insurance decisions", "de")).toBe(
-      "Versicherungsprämien / Versicherungsentscheidungen",
+  it("translates the register category 'insurance premiums / insurance decisions (Art. 54(1)(b))' to German", () => {
+    expect(localizeBackendText("insurance premiums / insurance decisions (Art. 54(1)(b))", "de")).toBe(
+      "Versicherungsprämien / Versicherungsentscheidungen (Art. 54(1)(b))",
     );
   });
 
@@ -292,9 +292,9 @@ describe("localizeBackendText", () => {
       "advertising or marketing",
       "AI/model training or validation",
       "clinical / epidemiological / treatment-gap",
-      "detrimental decisions about employees / re-identification",
+      "job offers / discriminatory decisions (Art. 54(1)(b))",
       "development of alcoholic products",
-      "insurance premiums / insurance decisions",
+      "insurance premiums / insurance decisions (Art. 54(1)(b))",
       "passing data to third parties not in permit",
       "prevention / guidelines / quality",
       "public health",

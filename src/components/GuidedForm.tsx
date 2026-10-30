@@ -4,7 +4,7 @@
  * i18n: all visible strings come from useT().
  */
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   previewRequest,
   SAMPLE_ENTRIES,
@@ -156,8 +156,10 @@ function WeUnderstoodPanel({ preview }: { preview: PreviewResult }) {
 // ---------------------------------------------------------------------------
 export function GuidedForm({
   onResult,
+  onChange,
 }: {
   onResult: (result: DecisionResult, request: AccessRequest) => void;
+  onChange?: () => void;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -172,6 +174,19 @@ export function GuidedForm({
   const [importError, setImportError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const revisionRef = useRef(0);
+  useEffect(() => () => {
+    revisionRef.current += 1;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+  }, []);
+
+  function invalidateResult() {
+    revisionRef.current += 1;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setPreview(null);
+    setPreviewError("");
+    onChange?.();
+  }
 
   const STEP_LABELS: Record<Step, string> = {
     1: t("form.step1"),
@@ -186,6 +201,7 @@ export function GuidedForm({
   function loadSample(index: number) {
     const entry = SAMPLE_ENTRIES[index];
     if (!entry) return;
+    invalidateResult();
     const next = {
       ...entry.request,
       definitions:
@@ -199,6 +215,7 @@ export function GuidedForm({
 
   // ── Debounced preview ──────────────────────────────────────────────────────
   const triggerPreview = useCallback((current: AccessRequest) => {
+    const revision = revisionRef.current;
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const req = toRequest(current);
     if (
@@ -213,15 +230,18 @@ export function GuidedForm({
     debounceRef.current = setTimeout(async () => {
       try {
         const result = await previewRequest(req);
+        if (revision !== revisionRef.current) return;
         setPreview(result);
         setPreviewError("");
       } catch (e) {
+        if (revision !== revisionRef.current) return;
         setPreviewError(e instanceof Error ? e.message : "Preview unavailable.");
       }
     }, 600);
   }, []);
 
   function setField<K extends keyof AccessRequest>(key: K, value: AccessRequest[K]) {
+    invalidateResult();
     setForm((f) => {
       const next = { ...f, [key]: value };
       triggerPreview(next);
@@ -230,10 +250,12 @@ export function GuidedForm({
   }
 
   function setApplicantField(key: keyof AccessRequest["applicant"], value: string) {
+    invalidateResult();
     setForm((f) => ({ ...f, applicant: { ...f.applicant, [key]: value } }));
   }
 
   function setDefinition(index: number, value: string) {
+    invalidateResult();
     setForm((f) => {
       const defs = [...f.definitions];
       defs[index] = value;
@@ -244,10 +266,12 @@ export function GuidedForm({
   }
 
   function addDefinition() {
+    invalidateResult();
     setForm((f) => ({ ...f, definitions: [...f.definitions, ""] }));
   }
 
   function removeDefinition(index: number) {
+    invalidateResult();
     setForm((f) => {
       const defs = f.definitions.filter((_, i) => i !== index);
       const next = { ...f, definitions: defs.length > 0 ? defs : [""] };
@@ -277,6 +301,7 @@ export function GuidedForm({
         setImportError(t("form.importMustBeObject"));
         return;
       }
+      invalidateResult();
       setForm({
         id: typeof parsed.id === "string" ? parsed.id : `req-${Date.now()}`,
         submitted:
@@ -332,12 +357,13 @@ export function GuidedForm({
 
   // ── Submit ─────────────────────────────────────────────────────────────────
   async function handleSubmit() {
+    const revision = revisionRef.current;
     setSubmitError("");
     setBusy(true);
     try {
       const req = toRequest(form);
       const result = await submitRequest(req);
-      onResult(result, req);
+      if (revision === revisionRef.current) onResult(result, req);
     } catch (e) {
       setSubmitError(
         e instanceof Error ? e.message : t("form.requestFailed"),
@@ -404,7 +430,7 @@ export function GuidedForm({
           <textarea
             aria-label="Paste JSON for import"
             value={importText}
-            onChange={(e) => setImportText(e.target.value)}
+            onChange={(e) => { invalidateResult(); setImportText(e.target.value); }}
             rows={5}
             className={textareaCls}
             placeholder='{ "requested_as": "...", ... }'

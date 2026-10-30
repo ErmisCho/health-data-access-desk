@@ -89,7 +89,7 @@ it("explains the ordered legal checks and all measured safeguards and test resul
     "written reason recorded in an audit log",
     "same safeguards still apply",
     "decision_rules.json",
-    "1.0.0",
+    "1.0.1",
     "14 rules",
     "rule id and rules version",
     "Regulation (EU) 2025/327",

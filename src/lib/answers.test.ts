@@ -50,3 +50,10 @@ it("prettifies generic and future metric names without changing their meaning", 
   expect(metricLabel("percentage")).toBe("Percentage");
   expect(isPercentage("percentage", ["suppressed"])).toBe(true);
 });
+
+it("keeps readable backend labels and localizes known raw metric keys", () => {
+  expect(metricLabel("Adults with type 2 diabetes")).toBe("Adults with type 2 diabetes");
+  expect(metricLabel("type2_diabetes", "de")).toBe("Erwachsene mit Typ-2-Diabetes");
+  expect(metricLabel("prevalence_pct", "de")).toBe("Prävalenz (%)");
+  expect(metricLabel("future_metric_pct")).toBe("Future metric (%)");
+});

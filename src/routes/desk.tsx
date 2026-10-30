@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SAMPLE_ENTRIES, submitRequest, type AccessRequest, type DecisionResult } from "@/lib/ehds";
 import { StaffHistory } from "@/components/StaffHistory";
@@ -35,16 +35,11 @@ function Desk() {
   return (
     <div className="min-h-screen font-sans">
       <SiteHeader />
-      <header className="border-b border-border bg-primary text-primary-foreground">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
-          <div>
-            <p className="font-mono text-xs uppercase tracking-widest">
-              {t("desk.eyebrow")}
-            </p>
-            <h1 className="font-display text-3xl font-bold">{t("desk.heading")}</h1>
-          </div>
+      <main className="mx-auto max-w-6xl px-6 py-10">
+        <div className="mb-6 flex flex-wrap items-center justify-end gap-4">
           <div
-            className="flex rounded border border-primary-foreground/30 p-1"
+            className="flex rounded border border-border p-1"
+            role="group"
             aria-label={t("desk.roleLabel")}
           >
             {(["applicant", "staff", "demo"] as const).map((r) => (
@@ -52,7 +47,7 @@ function Desk() {
                 key={r}
                 aria-pressed={role === r}
                 onClick={() => setRole(r)}
-                className={`rounded px-4 py-1.5 text-sm font-medium capitalize ${role === r ? "bg-accent text-accent-foreground" : "hover:bg-primary-foreground/10"}`}
+                className={`rounded px-4 py-1.5 text-sm font-medium capitalize ${role === r ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
               >
                 {r === "applicant"
                   ? t("desk.role.applicant")
@@ -63,8 +58,6 @@ function Desk() {
             ))}
           </div>
         </div>
-      </header>
-      <main className="mx-auto max-w-6xl px-6 py-10">
         <div hidden={role !== "applicant"}>
           <Applicant />
         </div>
@@ -83,6 +76,11 @@ function Applicant() {
   const [submittedRequest, setSubmittedRequest] = useState<AccessRequest | null>(null);
   const t = useT();
 
+  function clearResult() {
+    setResult(null);
+    setSubmittedRequest(null);
+  }
+
   function handleResult(r: DecisionResult, req: AccessRequest) {
     setResult(r);
     setSubmittedRequest(req);
@@ -91,7 +89,7 @@ function Applicant() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-2xl font-semibold">{t("desk.applicant.heading")}</h2>
+        <h1 className="font-display text-2xl font-semibold">{t("desk.applicant.heading")}</h1>
         <div
           className="flex rounded border border-border p-1"
           aria-label={t("desk.inputMode")}
@@ -100,7 +98,7 @@ function Applicant() {
             <button
               key={tabKey}
               aria-pressed={tab === tabKey}
-              onClick={() => setTab(tabKey)}
+              onClick={() => { if (tab !== tabKey) clearResult(); setTab(tabKey); }}
               className={`rounded px-4 py-1 text-sm font-medium capitalize ${tab === tabKey ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
             >
               {tabKey === "guided" ? t("desk.tab.guided") : t("desk.tab.json")}
@@ -110,11 +108,11 @@ function Applicant() {
       </div>
 
       {tab === "guided" && (
-        <GuidedForm onResult={handleResult} />
+        <GuidedForm onResult={handleResult} onChange={clearResult} />
       )}
 
       {tab === "json" && (
-        <JsonEditor onResult={handleResult} />
+        <JsonEditor onResult={handleResult} onChange={clearResult} />
       )}
 
       {result && submittedRequest && (
@@ -133,14 +131,19 @@ function Applicant() {
 
 function JsonEditor({
   onResult,
+  onChange,
 }: {
   onResult: (result: DecisionResult, req: AccessRequest) => void;
+  onChange: () => void;
 }) {
   const [text, setText] = useState(JSON.stringify(SAMPLE_ENTRIES[0]!.request, null, 2));
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const revisionRef = useRef(0);
+  useEffect(() => () => { revisionRef.current += 1; }, []);
   const t = useT();
   async function submit() {
+    const revision = revisionRef.current;
     setError("");
     let parsed: unknown;
     try {
@@ -178,7 +181,7 @@ function JsonEditor({
           ? (source["definitions"] as string[]).filter((d): d is string => typeof d === "string")
           : [],
       };
-      onResult(result, req);
+      if (revision === revisionRef.current) onResult(result, req);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("form.requestFailed"));
     } finally {
@@ -193,6 +196,7 @@ function JsonEditor({
           disabled={busy}
           className="mt-1 block w-full rounded border border-input bg-card px-3 py-2 text-foreground"
           onChange={(e) => {
+            onChange();
             setText(JSON.stringify(SAMPLE_ENTRIES[+e.target.value]!.request, null, 2));
             setError("");
           }}
@@ -209,6 +213,7 @@ function JsonEditor({
         disabled={busy}
         value={text}
         onChange={(e) => {
+          onChange();
           setText(e.target.value);
         }}
         className="h-80 w-full rounded border border-input bg-card p-3 font-mono text-sm"

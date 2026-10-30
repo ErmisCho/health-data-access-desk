@@ -2,17 +2,19 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, expect, it, vi } from "vitest";
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { functions: { invoke: vi.fn() } } }));
 import { supabase } from "@/integrations/supabase/client";
+import { LangProvider } from "@/lib/i18n";
 import { ResultsTable } from "./ResultsTable";
 import { DecisionDetails } from "./DecisionDetails";
 afterEach(() => {
   cleanup();
   vi.resetAllMocks();
+  sessionStorage.removeItem("ehds-lang");
 });
 it("Yes/No toggle hides and restores percentage headers and cells", () => {
   render(<ResultsTable answer={{ Wien: { count: 30, prevalence_pct: 8.1 } }} />);
-  expect(screen.getByRole("columnheader", { name: "Prevalence pct" })).toBeInTheDocument();
+  expect(screen.getByRole("columnheader", { name: "Prevalence (%)" })).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText("Show percentage columns"), { target: { value: "no" } });
-  expect(screen.queryByRole("columnheader", { name: "Prevalence pct" })).not.toBeInTheDocument();
+  expect(screen.queryByRole("columnheader", { name: "Prevalence (%)" })).not.toBeInTheDocument();
   expect(screen.queryByText("8.1 %")).not.toBeInTheDocument();
   expect(screen.getByText("30")).toBeInTheDocument();
   fireEvent.change(screen.getByLabelText("Show percentage columns"), { target: { value: "yes" } });
@@ -67,4 +69,20 @@ it("rejections show the decision and reason without results", () => {
   expect(screen.getByText("Prohibited")).toBeInTheDocument();
   expect(screen.queryByRole("table")).not.toBeInTheDocument();
   expect(screen.queryByText(/Cohort size/)).not.toBeInTheDocument();
+});
+
+it.each(["en", "de"])("renders readable R01/R03/R09 headings and preserves suppression in %s", (lang) => {
+  sessionStorage.setItem("ehds-lang", lang);
+  render(<LangProvider><ResultsTable answer={{ Wien: {
+    adults: 30, type2_diabetes: "<10", prevalence_pct: "suppressed",
+    af_patients: 20, without_oac: "<10", share_without_oac_pct: "suppressed",
+    adults_with_hypertension: 25, ace_inhibitor_pct: 12, arb_pct: 4,
+  } }} /></LangProvider>);
+  const expected = lang === "de"
+    ? ["Erwachsene", "Erwachsene mit Typ-2-Diabetes", "Prävalenz (%)", "Personen mit Vorhofflimmern", "Personen ohne orale Antikoagulation", "Ohne orale Antikoagulation (%)", "Erwachsene mit Bluthochdruck", "ACE-Hemmer-Einnahme (%)", "Angiotensin-Rezeptorblocker-Einnahme (%)"]
+    : ["Adults", "Adults with type 2 diabetes", "Prevalence (%)", "Patients with atrial fibrillation", "Patients without oral anticoagulation", "Without oral anticoagulation (%)", "Adults with hypertension", "ACE inhibitor use (%)", "Angiotensin receptor blocker use (%)"];
+  for (const name of expected) expect(screen.getByRole("columnheader", { name })).toBeInTheDocument();
+  expect(screen.getAllByText("<10")).toHaveLength(2);
+  expect(screen.getAllByText("suppressed")).toHaveLength(2);
+  expect(screen.getByText("30")).toBeInTheDocument();
 });

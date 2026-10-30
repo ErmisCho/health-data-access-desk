@@ -103,7 +103,7 @@ export function createDecisionLetter(
       ? {
           headers: [
             ...Array.from({ length: depth }, (_, i) => (depth === 1 ? "Group" : `Group ${i + 1}`)),
-            ...columns.map(metricLabel),
+            ...columns.map((column) => metricLabel(column, locale.startsWith("de") ? "de" : "en")),
           ],
           rows: rows.map((row) => [
             ...Array.from({ length: depth }, (_, i) => row.groups[i] ?? "—"),

@@ -23,7 +23,7 @@ const result: DecisionResult = {
       number: "54",
       ref: "Art. 54",
       title: "Prohibited secondary use",
-      summary: "Prohibits using health data for insurance decisions, advertising, harmful products, employee profiling, or third-party sharing outside the permit.",
+      summary: "Prohibits using health data for detrimental decisions about people; decisions about job offers, less favourable goods or services, insurance or credit, or other discriminatory decisions; advertising or marketing; developing harmful products or services; and activities conflicting with ethical provisions of national law.",
       quote: "advertising or marketing activities;",
       applies: "advertising or marketing activities",
     }],
@@ -31,7 +31,7 @@ const result: DecisionResult = {
 };
 const article = result.explanation!.articles[0]!;
 const germanReason = "Werbung und Marketing sind verbotene Zwecke für Gesundheitsdaten (Art. 54).";
-const germanSummary = "Verbietet die Nutzung von Gesundheitsdaten für Versicherungsentscheidungen, Werbung, schädliche Produkte, Mitarbeiterprofilierung oder Weitergabe an Dritte außerhalb der Genehmigung.";
+const germanSummary = "Verbietet die Nutzung von Gesundheitsdaten für nachteilige Entscheidungen über Personen; Entscheidungen über Stellenangebote, ungünstigere Waren- oder Dienstleistungsbedingungen, Versicherungen oder Kredite oder andere diskriminierende Entscheidungen; Werbung oder Marketing; die Entwicklung schädlicher Produkte oder Dienstleistungen; und Tätigkeiten im Widerspruch zu ethischen Bestimmungen des nationalen Rechts.";
 
 function LanguageSwitch() {
   const { setLang } = useLang();

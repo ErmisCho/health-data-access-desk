@@ -75,6 +75,33 @@ describe("Desk route", () => {
     },
   );
 
+  it.each(["sample", "json", "tab", "guided sample", "guided field"])("clears the previous decision on %s changes", async (change) => {
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: { request_id: "R01", decision: "APPROVE_STATISTICAL", articles: ["53"], reason: "Allowed", answer: null },
+      error: null,
+    });
+    await renderDesk("/desk");
+    expect(screen.getAllByRole("banner")).toHaveLength(1);
+    const guided = change.startsWith("guided");
+    if (guided) {
+      fireEvent.change(screen.getByLabelText("Load a sample"), { target: { value: "0" } });
+      fireEvent.click(screen.getByRole("button", { name: /6\./ }));
+    } else {
+      fireEvent.click(screen.getByRole("button", { name: "JSON" }));
+    }
+    fireEvent.click(screen.getByRole("button", { name: "Submit request" }));
+    await screen.findByRole("heading", { name: "Decision" });
+    if (change === "sample") fireEvent.change(screen.getByLabelText("Sample request"), { target: { value: "1" } });
+    if (change === "json") fireEvent.change(screen.getByLabelText("Request JSON"), { target: { value: "{}" } });
+    if (change === "tab") fireEvent.click(screen.getByRole("button", { name: "Guided" }));
+    if (change === "guided sample") fireEvent.change(screen.getByLabelText("Load a sample"), { target: { value: "1" } });
+    if (change === "guided field") {
+      fireEvent.click(screen.getByRole("button", { name: /1\./ }));
+      fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Changed name" } });
+    }
+    expect(screen.queryByRole("heading", { name: "Decision" })).not.toBeInTheDocument();
+  });
+
   it.each(["/desk", "/desk?view=unknown"])("opens the applicant view for %s", async (entry) => {
     const roles = await renderDesk(entry);
     expect(within(roles).getByRole("button", { name: "applicant" })).toHaveAttribute(
