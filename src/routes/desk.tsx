@@ -1,14 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { SAMPLE_ENTRIES, submitRequest, type AccessRequest, type DecisionResult } from "@/lib/ehds";
-import { StaffHistory } from "@/components/StaffHistory";
 import { DecisionDetails } from "@/components/DecisionDetails";
-import { DemoPanel } from "@/components/DemoPanel";
 import { GuidedForm } from "@/components/GuidedForm";
 import { EmptyState, ErrorState } from "@/components/States";
 import { usePreferences } from "@/lib/preferences";
 import { useT } from "@/lib/i18n";
+
+const StaffHistory = lazy(() =>
+  import("@/components/StaffHistory").then((m) => ({ default: m.StaffHistory })),
+);
+const DemoPanel = lazy(() =>
+  import("@/components/DemoPanel").then((m) => ({ default: m.DemoPanel })),
+);
 
 export const Route = createFileRoute("/desk")({
   validateSearch: (search: Record<string, unknown>): { view?: "demo" | undefined } => ({
@@ -37,12 +42,20 @@ function Desk() {
   return (
     <div className="min-h-screen font-sans">
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main id="main-content" className="mx-auto max-w-6xl px-6 py-10">
         <div hidden={role !== "applicant"}>
           <Applicant />
         </div>
-        {role === "staff" && <StaffHistory />}
-        {role === "demo" && <DemoPanel />}
+        {role === "staff" && (
+          <Suspense fallback={<p role="status">{t("staff.loading")}</p>}>
+            <StaffHistory />
+          </Suspense>
+        )}
+        {role === "demo" && (
+          <Suspense fallback={null}>
+            <DemoPanel />
+          </Suspense>
+        )}
       </main>
     </div>
   );

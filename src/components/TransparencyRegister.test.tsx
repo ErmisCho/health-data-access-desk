@@ -103,3 +103,37 @@ it("handles a failure without exposing backend details and lets the reader retry
   fireEvent.click(screen.getByRole("button", { name: "Try again" }));
   expect(await screen.findByText(entry.reference)).toBeVisible();
 });
+
+// ── Accessibility checks ──────────────────────────────────────────────────────
+
+it("has exactly one h1", async () => {
+  invoke.mockResolvedValue({ data: { entries: [] }, error: null });
+  render(<LangProvider><TransparencyRegister /></LangProvider>);
+  await screen.findByRole("heading", { level: 1, name: "Transparency register" });
+  expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+});
+
+it("filter select has an associated label", async () => {
+  invoke.mockResolvedValue({ data: { entries: [] }, error: null });
+  render(<TransparencyRegister />);
+  await screen.findByRole("heading", { level: 1 });
+  expect(screen.getByLabelText("Filter by decision")).toBeInTheDocument();
+});
+
+it("table region is keyboard-reachable and has an accessible caption", async () => {
+  invoke.mockResolvedValue({
+    data: {
+      entries: [
+        { ...entry, reference: "HDAB-X1", purpose_category: "scientific research", articles: ["53"] },
+      ],
+    },
+    error: null,
+  });
+  render(<TransparencyRegister />);
+  await screen.findByText("HDAB-X1");
+  expect(screen.getByRole("table")).toHaveAccessibleName(
+    "Public decisions, newest submission first",
+  );
+  const region = screen.getByRole("region", { name: "Published decisions" });
+  expect(region).toHaveAttribute("tabindex", "0");
+});

@@ -1,10 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { getRequest } from "@/lib/ehds";
 import { createDecisionLetter } from "@/lib/decision-letter";
-import { DecisionLetter } from "@/components/DecisionLetter";
 import { EmptyState, ErrorState } from "@/components/States";
 import { useT, useLang } from "@/lib/i18n";
+
+const DecisionLetter = lazy(() =>
+  import("@/components/DecisionLetter").then((m) => ({ default: m.DecisionLetter })),
+);
 
 export const Route = createFileRoute("/desk_/letter/$requestId")({
   loader: async ({ params }) => getRequest(params.requestId),
@@ -32,5 +35,9 @@ function LetterPage() {
   const locale = lang === "de" ? "de-AT" : "en-GB";
   const letter = createDecisionLetter(result, new Date(), t, locale);
   useEffect(() => { document.title = t("page.title.letter"); }, [t]);
-  return <DecisionLetter letter={letter} />;
+  return (
+    <Suspense fallback={<EmptyState title="Loading decision letter…" />}>
+      <DecisionLetter letter={letter} />
+    </Suspense>
+  );
 }

@@ -27,7 +27,7 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
     }
   }
   return (
-    <div className="decision-letter-page mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6">
+    <div id="main-content" className="decision-letter-page mx-auto max-w-4xl space-y-6 px-4 py-8 sm:px-6">
       <nav
         aria-label="Letter actions"
         className="flex flex-wrap items-center justify-between gap-4 print:hidden"

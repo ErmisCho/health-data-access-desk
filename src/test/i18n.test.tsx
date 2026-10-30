@@ -291,12 +291,13 @@ describe("localizeBackendText", () => {
     }
   });
 
-  it("translates all 14 register purpose categories to German", () => {
+  it("translates all 15 register purpose categories to German", () => {
     const categories = [
       "advertising or marketing",
       "AI/model training or validation",
       "clinical / epidemiological / treatment-gap",
       "job offers / discriminatory decisions (Art. 54(1)(b))",
+      "credit scoring / loan eligibility and conditions (Art. 54(1)(b))",
       "development of alcoholic products",
       "insurance premiums / insurance decisions (Art. 54(1)(b))",
       "passing data to third parties not in permit",

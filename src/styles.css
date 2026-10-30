@@ -180,6 +180,43 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
   }
+
+  /* Skip-to-content link — visually hidden until focused. */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .skip-link:focus {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    z-index: 9999;
+    padding: 0.5rem 1rem;
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    border-radius: 0.375rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  /* Honour reduced-motion: disable transitions/animations. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
 /* Privacy markings use a neutral token and never colour alone. */

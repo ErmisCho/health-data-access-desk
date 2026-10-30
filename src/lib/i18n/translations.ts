@@ -111,6 +111,9 @@ const BACKEND_DE: Record<string, string> = {
   "job offers / discriminatory decisions (Art. 54(1)(b))":
     "Stellenangebote / diskriminierende Entscheidungen (Art. 54(1)(b))",
 
+  "credit scoring / loan eligibility and conditions (Art. 54(1)(b))":
+    "Kreditwürdigkeitsprüfung / Kreditvergabe und -konditionen (Art. 54 Abs. 1 Buchst. b)",
+
   "development of alcoholic products":
     "Entwicklung von Alkoholprodukten",
 

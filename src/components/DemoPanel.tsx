@@ -94,6 +94,7 @@ export function DemoPanel() {
     outcome && SAMPLE_ENTRIES.find((entry) => entry.id === outcome.scenario.id)?.request;
   return (
     <div className="space-y-6">
+      <h1 className="sr-only">{t("desk.heading")}</h1>
       <section aria-label={t("demo.proof.heading")} className="rounded border border-border bg-muted p-4">
         <h2 className="font-display text-lg font-semibold">{t("demo.proof.heading")}</h2>
         <p className="mt-2 font-mono text-sm">{t("demo.proof.text")}</p>
