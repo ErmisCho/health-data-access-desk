@@ -1,6 +1,8 @@
 import type { DecisionExplanation } from "@/lib/ehds";
 import { LegalQuote } from "./LegalQuote";
 import type { ReactNode } from "react";
+import { useLang, useT } from "@/lib/i18n";
+import { localizeBackendText } from "@/lib/i18n/translations";
 
 // Match literal substrings, including repeated and overlapping phrases, without changing the text.
 function PurposeHighlight({ text, phrases }: { text: string; phrases: string[] }) {
@@ -45,18 +47,23 @@ export function ExplanationPanel({
   question?: string | undefined;
   approved?: boolean;
 }) {
+  const t = useT();
+  const { lang } = useLang();
+
+  const localRule = localizeBackendText(explanation.rule, lang);
+
   return (
     <section
-      aria-label="Decision explanation"
+      aria-label={t("explanation.heading")}
       className="min-w-0 space-y-4 break-words rounded-lg border border-border p-4"
     >
-      <h3 className="font-semibold">Decision explanation</h3>
+      <h3 className="font-semibold">{t("explanation.heading")}</h3>
       <div>
-        <h4 className="text-sm font-medium">Rule:</h4>
-        <p className="mt-1">{explanation.rule}</p>
+        <h4 className="text-sm font-medium">{t("explanation.rule")}</h4>
+        <p className="mt-1">{localRule}</p>
         {purpose && (
           <div className="mt-3">
-            <h4 className="text-sm font-medium">Request purpose</h4>
+            <h4 className="text-sm font-medium">{t("explanation.requestPurpose")}</h4>
             <p className="mt-1 whitespace-pre-wrap">
               <PurposeHighlight text={purpose} phrases={explanation.trigger_phrases} />
             </p>
@@ -64,7 +71,7 @@ export function ExplanationPanel({
         )}
         {question && (
           <div className="mt-3">
-            <h4 className="text-sm font-medium">Request question</h4>
+            <h4 className="text-sm font-medium">{t("explanation.requestQuestion")}</h4>
             <p className="mt-1 whitespace-pre-wrap">
               <PurposeHighlight text={question} phrases={explanation.trigger_phrases} />
             </p>
@@ -72,7 +79,7 @@ export function ExplanationPanel({
         )}
         {!purpose && !question && !!explanation.trigger_context?.length && (
           <div className="mt-3">
-            <h4 className="text-sm font-medium">Matched request context</h4>
+            <h4 className="text-sm font-medium">{t("explanation.matchedContext")}</h4>
             {explanation.trigger_context.map((context, i) => (
               <p key={i} className="mt-1 whitespace-pre-wrap">
                 <PurposeHighlight text={context} phrases={explanation.trigger_phrases} />
@@ -83,7 +90,7 @@ export function ExplanationPanel({
       </div>
       {!!explanation.trigger_phrases.length && (
         <div>
-          <h4 className="text-sm font-medium">Trigger phrases</h4>
+          <h4 className="text-sm font-medium">{t("explanation.triggerPhrases")}</h4>
           <ul className="mt-2 space-y-2">
             {explanation.trigger_phrases.map((phrase, i) => (
               <li key={i}>
@@ -95,8 +102,13 @@ export function ExplanationPanel({
       )}
       {approved && explanation.plan_summary && (
         <div>
-          <h4 className="text-sm font-medium">What we understood</h4>
-          <p className="mt-1">{explanation.plan_summary}</p>
+          <h4 className="text-sm font-medium">{t("explanation.whatWeUnderstood")}</h4>
+          <p className="mt-1">
+            {explanation.plan_summary}
+            {lang === "de" && (
+              <span className="text-muted-foreground">{t("explanation.planSuffixEn")}</span>
+            )}
+          </p>
         </div>
       )}
       {explanation.articles.map((article, i) => (

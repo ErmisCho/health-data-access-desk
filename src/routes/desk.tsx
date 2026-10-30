@@ -7,6 +7,7 @@ import { DecisionDetails } from "@/components/DecisionDetails";
 import { DemoPanel } from "@/components/DemoPanel";
 import { GuidedForm } from "@/components/GuidedForm";
 import { EmptyState, ErrorState } from "@/components/States";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/desk")({
   validateSearch: (search: Record<string, unknown>): { view?: "demo" | undefined } => ({
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/desk")({
 function Desk() {
   const { view } = Route.useSearch();
   const [role, setRole] = useState<"applicant" | "staff" | "demo">(view ?? "applicant");
+  const t = useT();
   useEffect(() => setRole(view ?? "applicant"), [view]);
   return (
     <div className="min-h-screen font-sans">
@@ -36,13 +38,13 @@ function Desk() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
           <div>
             <p className="font-mono text-xs uppercase tracking-widest">
-              Health Data Access Body · EHDS
+              {t("desk.eyebrow")}
             </p>
-            <h1 className="font-display text-3xl font-bold">EHDS Access Desk</h1>
+            <h1 className="font-display text-3xl font-bold">{t("desk.heading")}</h1>
           </div>
           <div
             className="flex rounded border border-primary-foreground/30 p-1"
-            aria-label="View role"
+            aria-label={t("desk.roleLabel")}
           >
             {(["applicant", "staff", "demo"] as const).map((r) => (
               <button
@@ -51,7 +53,11 @@ function Desk() {
                 onClick={() => setRole(r)}
                 className={`rounded px-4 py-1.5 text-sm font-medium capitalize ${role === r ? "bg-accent text-accent-foreground" : "hover:bg-primary-foreground/10"}`}
               >
-                {r}
+                {r === "applicant"
+                  ? t("desk.role.applicant")
+                  : r === "staff"
+                  ? t("desk.role.staff")
+                  : t("desk.role.demo")}
               </button>
             ))}
           </div>
@@ -74,6 +80,7 @@ function Applicant() {
   const [tab, setTab] = useState<ApplicantTab>("guided");
   const [result, setResult] = useState<DecisionResult | null>(null);
   const [submittedRequest, setSubmittedRequest] = useState<AccessRequest | null>(null);
+  const t = useT();
 
   function handleResult(r: DecisionResult, req: AccessRequest) {
     setResult(r);
@@ -83,19 +90,19 @@ function Applicant() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="font-display text-2xl font-semibold">Data access request</h2>
+        <h2 className="font-display text-2xl font-semibold">{t("desk.applicant.heading")}</h2>
         <div
           className="flex rounded border border-border p-1"
-          aria-label="Input mode"
+          aria-label={t("desk.inputMode")}
         >
-          {(["guided", "json"] as ApplicantTab[]).map((t) => (
+          {(["guided", "json"] as ApplicantTab[]).map((tabKey) => (
             <button
-              key={t}
-              aria-pressed={tab === t}
-              onClick={() => setTab(t)}
-              className={`rounded px-4 py-1 text-sm font-medium capitalize ${tab === t ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
+              key={tabKey}
+              aria-pressed={tab === tabKey}
+              onClick={() => setTab(tabKey)}
+              className={`rounded px-4 py-1 text-sm font-medium capitalize ${tab === tabKey ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
             >
-              {t === "guided" ? "Guided" : "JSON"}
+              {tabKey === "guided" ? t("desk.tab.guided") : t("desk.tab.json")}
             </button>
           ))}
         </div>
@@ -111,7 +118,7 @@ function Applicant() {
 
       {result && submittedRequest && (
         <section aria-live="polite" className="rounded border border-border bg-card p-6">
-          <h2 className="font-display text-2xl font-semibold mb-4">Decision</h2>
+          <h2 className="font-display text-2xl font-semibold mb-4">{t("desk.decision.heading")}</h2>
           <DecisionDetails
             key={JSON.stringify(result)}
             result={result}
@@ -131,6 +138,7 @@ function JsonEditor({
   const [text, setText] = useState(JSON.stringify(SAMPLE_ENTRIES[0]!.request, null, 2));
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const t = useT();
   async function submit() {
     setError("");
     let parsed: unknown;
@@ -171,7 +179,7 @@ function JsonEditor({
       };
       onResult(result, req);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Request failed. Please try again.");
+      setError(e instanceof Error ? e.message : t("form.requestFailed"));
     } finally {
       setBusy(false);
     }
@@ -179,7 +187,7 @@ function JsonEditor({
   return (
     <div className="space-y-4">
       <label className="block text-sm text-muted-foreground">
-        Sample request
+        {t("form.sampleRequest")}
         <select
           disabled={busy}
           className="mt-1 block w-full rounded border border-input bg-card px-3 py-2 text-foreground"
@@ -210,7 +218,7 @@ function JsonEditor({
         disabled={busy}
         className="rounded bg-primary px-6 py-2.5 font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
       >
-        {busy ? "Evaluating…" : "Submit request"}
+        {busy ? t("form.evaluating") : t("form.submit")}
       </button>
     </div>
   );

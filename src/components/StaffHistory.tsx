@@ -12,6 +12,7 @@ import { DecisionDetails } from "./DecisionDetails";
 import { DecisionBadge } from "./DecisionBadge";
 import { DataTable } from "./DataTable";
 import { EmptyState, ErrorState } from "./States";
+import { useT } from "@/lib/i18n";
 
 const OVERRIDE_DECISIONS: Decision[] = ["REJECT", "APPROVE_STATISTICAL", "APPROVE_SPE"];
 
@@ -22,6 +23,7 @@ function ReviewForm({
   row: RequestSummary;
   onDone: () => void;
 }) {
+  const t = useT();
   const [action, setAction] = useState<"approve" | "override">("approve");
   const [decision, setDecision] = useState<Decision>("APPROVE_STATISTICAL");
   const [reason, setReason] = useState("");
@@ -54,7 +56,7 @@ function ReviewForm({
   return (
     <div className="mt-4 rounded border border-amber-400 bg-amber-50 p-4 dark:border-amber-600 dark:bg-amber-950">
       <h4 className="font-semibold text-amber-900 dark:text-amber-100">
-        Review request {row.request_id}
+        {t("staff.review.heading")} {row.request_id}
       </h4>
       <div className="mt-3 flex flex-wrap gap-3">
         <label className="flex items-center gap-2 text-sm">
@@ -65,7 +67,7 @@ function ReviewForm({
             checked={action === "approve"}
             onChange={() => setAction("approve")}
           />
-          Approve (retain pipeline decision)
+          {t("staff.review.approve")}
         </label>
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -75,12 +77,12 @@ function ReviewForm({
             checked={action === "override"}
             onChange={() => setAction("override")}
           />
-          Override decision
+          {t("staff.review.override")}
         </label>
       </div>
       {action === "override" && (
         <label className="mt-3 block text-sm">
-          Override decision
+          {t("staff.review.overrideLabel")}
           <select
             value={decision}
             onChange={(e) => setDecision(e.target.value as Decision)}
@@ -96,12 +98,13 @@ function ReviewForm({
       )}
       <label className="mt-3 block text-sm">
         <span>
-          Reason <span aria-hidden="true">(required)</span>
+          {t("staff.review.reason")}{" "}
+          <span aria-hidden="true">{t("staff.review.reasonRequired")}</span>
         </span>
         <textarea
           value={reason}
           onChange={(e) => setReason(e.target.value)}
-          placeholder="Explain the basis for this decision…"
+          placeholder={t("staff.review.reasonPlaceholder")}
           rows={3}
           maxLength={8000}
           className="mt-1 block w-full rounded border border-input bg-card p-2 text-sm"
@@ -110,13 +113,14 @@ function ReviewForm({
       </label>
       <label className="mt-3 block text-sm">
         <span>
-          Staff name <span aria-hidden="true">(required)</span>
+          {t("staff.review.staffName")}{" "}
+          <span aria-hidden="true">{t("staff.review.reasonRequired")}</span>
         </span>
         <input
           type="text"
           value={staffName}
           onChange={(e) => setStaffName(e.target.value)}
-          placeholder="Your name for the audit log"
+          placeholder={t("staff.review.staffNamePlaceholder")}
           maxLength={8000}
           className="mt-1 block w-full max-w-xs rounded border border-input bg-card px-3 py-2 text-sm"
           aria-required="true"
@@ -129,13 +133,18 @@ function ReviewForm({
         className="mt-3 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
         aria-disabled={!canSubmit}
       >
-        {busy ? "Submitting…" : action === "approve" ? "Approve" : "Override"}
+        {busy
+          ? t("staff.review.submitting")
+          : action === "approve"
+            ? t("staff.review.approveBtn")
+            : t("staff.review.overrideBtn")}
       </button>
     </div>
   );
 }
 
 export function StaffHistory() {
+  const t = useT();
   const [history, setHistory] = useState<RequestHistory | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [result, setResult] = useState<DecisionResult | null>(null);
@@ -198,22 +207,26 @@ export function StaffHistory() {
   return (
     <section>
       <div className="flex items-center justify-between gap-4">
-        <h2 className="font-display text-2xl font-semibold">Past requests</h2>
+        <h2 className="font-display text-2xl font-semibold">{t("staff.pastRequests")}</h2>
         <button
           disabled={loading}
           onClick={() => setRefresh((n) => n + 1)}
           className="rounded border border-input px-3 py-1 text-sm disabled:opacity-50"
         >
-          Refresh history
+          {t("staff.refreshHistory")}
         </button>
       </div>
 
       {loading && (
         <p role="status" className="mt-4">
-          Loading history…
+          {t("staff.loading")}
         </p>
       )}
-      {error && <ErrorState>Could not load history: {error}</ErrorState>}
+      {error && (
+        <ErrorState>
+          {t("staff.loadError")} {error}
+        </ErrorState>
+      )}
 
       {history && (
         <>
@@ -223,10 +236,10 @@ export function StaffHistory() {
               id="review-queue-heading"
               className="font-display text-xl font-semibold"
             >
-              Review queue
+              {t("staff.queue.heading")}
               {queuedRequests.length > 0 && (
                 <span
-                  aria-label={`${queuedRequests.length} awaiting review`}
+                  aria-label={`${queuedRequests.length} ${t("staff.queue.awaiting")}`}
                   className="ml-2 inline-flex items-center rounded-full bg-amber-500 px-2.5 py-0.5 text-sm font-medium text-white"
                 >
                   {queuedRequests.length}
@@ -234,7 +247,7 @@ export function StaffHistory() {
               )}
             </h3>
             {queuedRequests.length === 0 ? (
-              <EmptyState title="No requests awaiting review." />
+              <EmptyState title={t("staff.queue.empty")} />
             ) : (
               <div className="mt-3 space-y-3">
                 {queuedRequests.map((row) => (
@@ -245,7 +258,7 @@ export function StaffHistory() {
                     <div className="flex flex-wrap items-center gap-3">
                       <span className="font-mono font-medium">{row.request_id}</span>
                       <span className="rounded bg-amber-200 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-800 dark:text-amber-100">
-                        Awaiting staff review
+                        {t("staff.queue.awaitingBadge")}
                       </span>
                       <DecisionBadge decision={row.decision} />
                       <span className="text-xs text-muted-foreground">{row.submitted_at}</span>
@@ -259,26 +272,26 @@ export function StaffHistory() {
 
           {/* ── Submission history table ── */}
           <div className="mt-8">
-            <DataTable caption="Submission history">
+            <DataTable caption={t("staff.history.caption")}>
               <thead>
                 <tr>
                   <th scope="col" className="p-3">
-                    Request
+                    {t("staff.col.request")}
                   </th>
                   <th scope="col" className="p-3">
-                    Saved at
+                    {t("staff.col.savedAt")}
                   </th>
                   <th scope="col" className="p-3">
-                    Decision
+                    {t("staff.col.decision")}
                   </th>
                   <th scope="col" className="p-3">
-                    Review
+                    {t("staff.col.review")}
                   </th>
                   <th scope="col" className="p-3">
-                    Secure environment
+                    {t("staff.col.secureEnv")}
                   </th>
                   <th scope="col" className="p-3">
-                    Result
+                    {t("staff.col.result")}
                   </th>
                 </tr>
               </thead>
@@ -297,15 +310,15 @@ export function StaffHistory() {
                     </td>
                     <td className="p-3">
                       {row.status === "staff_review"
-                        ? "Awaiting staff review"
+                        ? t("staff.row.awaitingReview")
                         : row.last_staff_action
-                          ? `Reviewed by ${row.last_staff_action.staff_name}`
-                          : "No review needed"}
+                          ? `${t("staff.row.reviewedBy")} ${row.last_staff_action.staff_name}`
+                          : t("staff.row.noReview")}
                     </td>
                     <td className="p-3">
                       {row.spe_schema
-                        ? `${row.spe_schema} · downloads blocked`
-                        : "No secure environment recorded"}
+                        ? `${row.spe_schema} ${t("staff.row.speInfo")}`
+                        : t("staff.row.noSpe")}
                     </td>
                     <td className="p-3">
                       <button
@@ -313,7 +326,7 @@ export function StaffHistory() {
                         onClick={() => setSelectedId(row.request_id)}
                         className="rounded border border-input px-3 py-1"
                       >
-                        View latest result for {row.request_id}
+                        {t("staff.row.viewResult")} {row.request_id}
                       </button>
                     </td>
                   </tr>
@@ -321,17 +334,21 @@ export function StaffHistory() {
               </tbody>
             </DataTable>
           </div>
-          {!history.requests.length && <EmptyState title="No saved requests." />}
+          {!history.requests.length && <EmptyState title={t("staff.noRequests")} />}
 
           {/* ── Detail panel ── */}
           {selectedId && (
             <article className="mt-6 rounded border border-border bg-card p-6">
-              <h3 className="font-semibold">Latest saved result — {selectedId}</h3>
+              <h3 className="font-semibold">
+                {t("staff.detail.title")} {selectedId}
+              </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                For repeated request IDs, this shows the most recent saved response.
+                {t("staff.detail.note")}
               </p>
               {detailError ? (
-                <ErrorState>Could not load saved result: {detailError}</ErrorState>
+                <ErrorState>
+                  {t("staff.detail.loadError")} {detailError}
+                </ErrorState>
               ) : result && result.request_id === selectedId ? (
                 <DecisionDetails
                   key={selectedId}
@@ -341,7 +358,7 @@ export function StaffHistory() {
                 />
               ) : (
                 <p role="status" className="mt-4">
-                  Loading saved result…
+                  {t("staff.detail.loading")}
                 </p>
               )}
             </article>
@@ -350,30 +367,30 @@ export function StaffHistory() {
           {/* ── Audit log ── */}
           <section aria-labelledby="audit-log-heading" className="mt-8">
             <h3 id="audit-log-heading" className="font-display text-xl font-semibold">
-              Audit log
+              {t("staff.audit.heading")}
             </h3>
             {history.staff_actions.length ? (
               <div className="mt-3">
-                <DataTable caption="Staff audit log">
+                <DataTable caption={t("staff.audit.caption")}>
                   <thead>
                     <tr>
                       <th scope="col" className="p-3">
-                        Who
+                        {t("staff.audit.col.who")}
                       </th>
                       <th scope="col" className="p-3">
-                        Request
+                        {t("staff.audit.col.request")}
                       </th>
                       <th scope="col" className="p-3">
-                        Action
+                        {t("staff.audit.col.action")}
                       </th>
                       <th scope="col" className="p-3">
-                        Decision
+                        {t("staff.audit.col.decision")}
                       </th>
                       <th scope="col" className="p-3">
-                        Reason
+                        {t("staff.audit.col.reason")}
                       </th>
                       <th scope="col" className="p-3">
-                        When
+                        {t("staff.audit.col.when")}
                       </th>
                     </tr>
                   </thead>
@@ -399,25 +416,27 @@ export function StaffHistory() {
                 </DataTable>
               </div>
             ) : (
-              <EmptyState title="No staff actions recorded." />
+              <EmptyState title={t("staff.audit.empty")} />
             )}
           </section>
 
           {/* ── Blocked-download log ── */}
-          <h3 className="mt-8 font-display text-xl font-semibold">Blocked-download log</h3>
+          <h3 className="mt-8 font-display text-xl font-semibold">
+            {t("staff.download.heading")}
+          </h3>
           {history.downloads.length ? (
             <div className="mt-3">
-              <DataTable caption="Blocked download attempts">
+              <DataTable caption={t("staff.download.caption")}>
                 <thead>
                   <tr>
                     <th scope="col" className="p-3">
-                      Request
+                      {t("staff.download.col.request")}
                     </th>
                     <th scope="col" className="p-3">
-                      Attempted at
+                      {t("staff.download.col.attemptedAt")}
                     </th>
                     <th scope="col" className="p-3">
-                      Status
+                      {t("staff.download.col.status")}
                     </th>
                   </tr>
                 </thead>
@@ -431,14 +450,14 @@ export function StaffHistory() {
                         {attempt.request_id}
                       </th>
                       <td className="p-3">{attempt.attempted_at}</td>
-                      <td className="p-3">Blocked</td>
+                      <td className="p-3">{t("staff.download.blocked")}</td>
                     </tr>
                   ))}
                 </tbody>
               </DataTable>
             </div>
           ) : (
-            <EmptyState title="No blocked-download attempts recorded." />
+            <EmptyState title={t("staff.download.empty")} />
           )}
         </>
       )}

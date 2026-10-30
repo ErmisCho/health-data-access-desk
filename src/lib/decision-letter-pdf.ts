@@ -1,8 +1,29 @@
 import { jsPDF } from "jspdf/dist/jspdf.es.min.js";
 import type { DecisionLetter } from "./decision-letter";
+import type { TranslationKey } from "./i18n";
+
+type TFn = (key: TranslationKey) => string;
+
+const EN_PDF_STRINGS: Partial<Record<TranslationKey, string>> = {
+  "pdf.heading.verdict": "Verdict",
+  "pdf.heading.why": "Why",
+  "pdf.heading.legalBasis": "Legal basis",
+  "pdf.heading.whatWeCounted": "What we counted",
+  "pdf.heading.results": "Results",
+  "pdf.heading.conditions": "Conditions and next steps",
+  "pdf.label.reference": "Reference: ",
+  "pdf.label.date": "Date: ",
+};
+
+function makeDefaultT(): TFn {
+  return (key) => EN_PDF_STRINGS[key] ?? key;
+}
 
 // Only the displayed letter model is accepted here, never a raw request or decision response.
-export function buildDecisionLetterPdf(letter: DecisionLetter): jsPDF {
+export function buildDecisionLetterPdf(
+  letter: DecisionLetter,
+  t: TFn = makeDefaultT(),
+): jsPDF {
   const doc = new jsPDF({
     orientation: (letter.table?.headers.length ?? 0) > 6 ? "landscape" : "portrait",
   });
@@ -68,25 +89,25 @@ export function buildDecisionLetterPdf(letter: DecisionLetter): jsPDF {
   }
 
   paragraph(letter.issuer, true);
-  paragraph(`Reference: ${letter.reference}`);
-  paragraph(`Date: ${letter.date}`);
+  paragraph(`${t("pdf.label.reference")}${letter.reference}`);
+  paragraph(`${t("pdf.label.date")}${letter.date}`);
   heading("Decision letter");
-  heading("Verdict");
+  heading(t("pdf.heading.verdict"));
   paragraph(letter.verdict);
   paragraph(letter.decision, true);
-  heading("Why");
+  heading(t("pdf.heading.why"));
   paragraph(letter.rule);
-  letter.triggers.forEach((phrase) => paragraph(`“${phrase}”`));
-  heading("Legal basis");
+  letter.triggers.forEach((phrase) => paragraph(`"${phrase}"`));
+  heading(t("pdf.heading.legalBasis"));
   if (!letter.articles.length) paragraph(letter.legalFallback);
   for (const article of letter.articles) {
     paragraph(`${article.ref} · ${article.title}`, true);
     paragraph(article.quote, false, article.applies);
     if (article.summary) paragraph(article.summary);
   }
-  heading("What we counted");
+  heading(t("pdf.heading.whatWeCounted"));
   paragraph(letter.plan);
-  heading("Results");
+  heading(t("pdf.heading.results"));
   if (letter.table) {
     const cellWidth = width / letter.table.headers.length;
     function tableRow(cells: string[], header = false) {
@@ -112,7 +133,7 @@ export function buildDecisionLetterPdf(letter: DecisionLetter): jsPDF {
     tableRow(letter.table.headers, true);
     letter.table.rows.forEach((row) => tableRow(row));
   } else paragraph(letter.results);
-  heading("Conditions and next steps");
+  heading(t("pdf.heading.conditions"));
   letter.conditions.forEach((condition) => paragraph(condition));
   return doc;
 }

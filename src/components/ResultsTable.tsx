@@ -4,33 +4,35 @@ import { answerColumns, answerRows, isPercentage, metricLabel } from "@/lib/answ
 
 import { DataCell, DataTable } from "./DataTable";
 import { EmptyState } from "./States";
+import { useT } from "@/lib/i18n";
 
 export function ResultsTable({ answer }: { answer: Answer | null }) {
+  const t = useT();
   const [showPercentages, setShowPercentages] = useState(true);
   const rows = answerRows(answer);
   const columns = answerColumns(rows, showPercentages);
   const depth = Math.max(0, ...rows.map((r) => r.groups.length));
-  if (!rows.length) return <EmptyState title="No statistical results available." />;
+  if (!rows.length) return <EmptyState title={t("results.noStats")} />;
   return (
     <div>
       <label className="mb-3 flex items-center gap-3 text-sm">
-        Show percentage columns
+        {t("results.showPercentages")}
         <select
-          aria-label="Show percentage columns"
+          aria-label={t("results.showPercentages")}
           value={showPercentages ? "yes" : "no"}
           onChange={(e) => setShowPercentages(e.target.value === "yes")}
           className="rounded border border-input bg-card px-3 py-1"
         >
-          <option value="yes">Yes</option>
-          <option value="no">No</option>
+          <option value="yes">{t("results.yes")}</option>
+          <option value="no">{t("results.no")}</option>
         </select>
       </label>
-      <DataTable caption="Statistical results">
+      <DataTable caption={t("letter.statResults.caption")}>
         <thead>
           <tr className="border-b border-border">
             {Array.from({ length: depth }, (_, i) => (
               <th scope="col" className="p-2 text-left" key={i}>
-                {depth === 1 ? "Group" : `Group ${i + 1}`}
+                {depth === 1 ? t("results.group") : `${t("results.groupN")} ${i + 1}`}
               </th>
             ))}
             {columns.map((c) => (

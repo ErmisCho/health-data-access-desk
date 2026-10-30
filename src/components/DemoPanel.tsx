@@ -3,17 +3,21 @@ import { downloadRequest, SAMPLE_ENTRIES, submitRequest, type DecisionResult } f
 import { answerRows } from "@/lib/answers";
 import { DecisionDetails } from "./DecisionDetails";
 import { EmptyState, ErrorState } from "./States";
+import { useT } from "@/lib/i18n";
 
 const scenarios = [
-  { key: "purpose", id: "R02", label: "Art. 54 rejection" },
-  { key: "statistics", id: "R01", label: "Statistics with numbers" },
-  { key: "opt-outs", id: "R01", label: "Opted-out patients excluded" },
-  { key: "small-cells", id: "R08", label: "Small-cell suppression" },
-  { key: "spe", id: "R05", label: "Secure environment" },
-  { key: "download", id: "R05", label: "Blocked download" },
-  { key: "downgrade", id: "R09", label: "Records downgraded to statistics" },
+  { key: "purpose", id: "R02", labelKey: "demo.scenario.purpose" },
+  { key: "statistics", id: "R01", labelKey: "demo.scenario.statistics" },
+  { key: "opt-outs", id: "R01", labelKey: "demo.scenario.optOuts" },
+  { key: "small-cells", id: "R08", labelKey: "demo.scenario.smallCells" },
+  { key: "spe", id: "R05", labelKey: "demo.scenario.spe" },
+  { key: "download", id: "R05", labelKey: "demo.scenario.download" },
+  { key: "downgrade", id: "R09", labelKey: "demo.scenario.downgrade" },
 ] as const;
-type Scenario = (typeof scenarios)[number] | { key: "request"; id: string; label: string };
+type ScenarioKey = (typeof scenarios)[number]["key"];
+type Scenario =
+  | { key: ScenarioKey; id: string; label: string }
+  | { key: "request"; id: string; label: string };
 type Download = Awaited<ReturnType<typeof downloadRequest>>;
 interface Outcome {
   scenario: Scenario;
@@ -21,7 +25,10 @@ interface Outcome {
   download?: Download;
 }
 
-function pointAt({ scenario, result, download }: Outcome): string {
+function pointAt(
+  { scenario, result, download }: Outcome,
+  t: (k: Parameters<ReturnType<typeof useT>>[0]) => string,
+): string {
   const metric = (group: string, key: string) =>
     answerRows(result.answer).find((row) => row.groups.includes(group))?.metrics[key] ??
     "Not provided";
@@ -50,6 +57,7 @@ function pointAt({ scenario, result, download }: Outcome): string {
 }
 
 export function DemoPanel() {
+  const t = useT();
   const [sampleId, setSampleId] = useState(SAMPLE_ENTRIES[0]!.id);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [running, setRunning] = useState<Scenario | null>(null);
@@ -84,37 +92,34 @@ export function DemoPanel() {
     outcome && SAMPLE_ENTRIES.find((entry) => entry.id === outcome.scenario.id)?.request;
   return (
     <div className="space-y-6">
-      <section aria-label="Proof" className="rounded border border-border bg-muted p-4">
-        <h2 className="font-display text-lg font-semibold">Proof</h2>
-        <p className="mt-2 font-mono text-sm">
-          Measured 30 Oct 2026 against the live backend: 10/10 sample decisions · 6/6 numbers · 0
-          leaks · consistent over 3 runs · 42 jury requests, 0 wrong decisions, 0 leaks, 13
-          prohibited purposes rejected
-        </p>
-        <p className="mt-2 text-xs text-muted-foreground">Test requests, not real applications.</p>
+      <section aria-label={t("demo.proof.heading")} className="rounded border border-border bg-muted p-4">
+        <h2 className="font-display text-lg font-semibold">{t("demo.proof.heading")}</h2>
+        <p className="mt-2 font-mono text-sm">{t("demo.proof.text")}</p>
+        <p className="mt-2 text-xs text-muted-foreground">{t("demo.proof.disclaimer")}</p>
       </section>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <section>
-          <h2 className="font-display text-2xl font-semibold">Two-minute demo</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Run in presentation order. Every click submits the original request to the live backend.
-          </p>
+          <h2 className="font-display text-2xl font-semibold">{t("demo.heading")}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t("demo.intro")}</p>
           <ol className="mt-4 space-y-2">
-            {scenarios.map((scenario, index) => (
-              <li key={scenario.key}>
-                <button
-                  onClick={() => run(scenario)}
-                  disabled={running !== null}
-                  aria-pressed={outcome?.scenario.key === scenario.key}
-                  className="w-full rounded border border-input bg-card px-4 py-3 text-left text-sm font-medium hover:bg-muted aria-pressed:border-primary aria-pressed:bg-muted disabled:opacity-50"
-                >
-                  {index + 1}. {scenario.label} · {scenario.id}
-                </button>
-              </li>
-            ))}
+            {scenarios.map((scenario, index) => {
+              const label = t(scenario.labelKey as Parameters<typeof t>[0]);
+              return (
+                <li key={scenario.key}>
+                  <button
+                    onClick={() => run({ key: scenario.key, id: scenario.id, label })}
+                    disabled={running !== null}
+                    aria-pressed={outcome?.scenario.key === scenario.key}
+                    className="w-full rounded border border-input bg-card px-4 py-3 text-left text-sm font-medium hover:bg-muted aria-pressed:border-primary aria-pressed:bg-muted disabled:opacity-50"
+                  >
+                    {index + 1}. {label} · {scenario.id}
+                  </button>
+                </li>
+              );
+            })}
           </ol>
           <label className="mt-6 block text-sm font-medium">
-            Any sample request
+            {t("demo.anyRequest")}
             <select
               value={sampleId}
               onChange={(event) => setSampleId(event.target.value)}
@@ -130,10 +135,12 @@ export function DemoPanel() {
           </label>
           <button
             disabled={running !== null}
-            onClick={() => run({ key: "request", id: sampleId, label: "Sample request" })}
+            onClick={() =>
+              run({ key: "request", id: sampleId, label: t("demo.run") })
+            }
             className="mt-3 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
           >
-            Run sample request
+            {t("demo.run")}
           </button>
         </section>
         <section
@@ -143,34 +150,35 @@ export function DemoPanel() {
           className="min-w-0 rounded border border-border bg-card p-6"
         >
           <h2 className="font-display text-2xl font-semibold">
-            {outcome ? `${outcome.scenario.id} · ${outcome.scenario.label}` : "Live result"}
+            {outcome
+              ? `${outcome.scenario.id} · ${outcome.scenario.label}`
+              : t("demo.result.heading")}
           </h2>
           {running && (
             <p role="status" className="mt-4">
-              Running {running.id} on the backend…
+              {t("demo.running")} {running.id} {t("demo.onBackend")}
             </p>
           )}
           {error && <ErrorState>{error}</ErrorState>}
           {outcome && !running && (
             <>
               <aside
-                aria-label="What to point at"
+                aria-label={t("demo.pointAt.heading")}
                 className="mt-4 rounded border-2 border-primary bg-muted p-4"
               >
-                <h3 className="font-semibold">What to point at</h3>
-                <p className="mt-2 break-words font-mono text-sm">{pointAt(outcome)}</p>
+                <h3 className="font-semibold">{t("demo.pointAt.heading")}</h3>
+                <p className="mt-2 break-words font-mono text-sm">
+                  {pointAt(outcome, t)}
+                </p>
                 {outcome.scenario.key === "opt-outs" && (
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Art. 71: eligible patients is the backend population count. Source-level
-                    exclusion relies on queries starting from eligible_patients before cohort
-                    filters and aggregation; this count alone is not an opt-out audit. The cited
-                    decision articles remain below.
+                    {t("demo.optouts.note")}
                   </p>
                 )}
               </aside>
               {request && (
                 <p className="mt-4 text-sm text-muted-foreground">
-                  Requested: {request.requested_as} · {request.requested_format}
+                  {t("demo.requested")} {request.requested_as} · {request.requested_format}
                 </p>
               )}
               <DecisionDetails
@@ -181,14 +189,11 @@ export function DemoPanel() {
             </>
           )}
           {!outcome && !running && !error && (
-            <EmptyState title="Choose a scenario to see its live decision and proof." />
+            <EmptyState title={t("demo.empty")} />
           )}
         </section>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Synthetic-data prototype · rules-based parser with limited language support · staff switch
-        lacks production authentication.
-      </p>
+      <p className="text-xs text-muted-foreground">{t("demo.disclaimer")}</p>
     </div>
   );
 }

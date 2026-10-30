@@ -6,8 +6,10 @@ import { LegalQuote } from "./LegalQuote";
 import { DataTable } from "./DataTable";
 import { Button } from "./ui/button";
 import { ErrorState } from "./States";
+import { useT } from "@/lib/i18n";
 
 export function DecisionLetter({ letter }: { letter: Letter }) {
+  const t = useT();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   async function download() {
@@ -15,9 +17,9 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
     setError("");
     try {
       const { buildDecisionLetterPdf } = await import("@/lib/decision-letter-pdf");
-      buildDecisionLetterPdf(letter).save(`decision-${letter.reference}.pdf`);
+      buildDecisionLetterPdf(letter, t).save(`decision-${letter.reference}.pdf`);
     } catch {
-      setError("The PDF could not be generated. Please try again.");
+      setError(t("letter.pdfError"));
     } finally {
       setBusy(false);
     }
@@ -29,10 +31,10 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
         className="flex flex-wrap items-center justify-between gap-4 print:hidden"
       >
         <Button asChild variant="outline">
-          <a href="/desk">Back to desk</a>
+          <a href="/desk">{t("letter.back")}</a>
         </Button>
         <Button onClick={download} disabled={busy}>
-          {busy ? "Preparing PDF…" : "Download PDF"}
+          {busy ? t("letter.preparingPdf") : t("letter.downloadPdf")}
         </Button>
       </nav>
       {error && <ErrorState>{error}</ErrorState>}
@@ -44,21 +46,21 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
           <p className="font-display text-xl font-bold">{letter.issuer}</p>
           <dl className="space-y-1 text-sm">
             <div>
-              <dt className="inline font-semibold">Reference: </dt>
+              <dt className="inline font-semibold">{t("letter.reference")}</dt>
               <dd className="inline font-mono">{letter.reference}</dd>
             </div>
             <div>
-              <dt className="inline font-semibold">Date: </dt>
+              <dt className="inline font-semibold">{t("letter.date")}</dt>
               <dd className="inline">{letter.date}</dd>
             </div>
           </dl>
           <h1 id="letter-title" className="font-display text-3xl font-bold">
-            Decision letter
+            {t("letter.title")}
           </h1>
         </header>
         <section aria-labelledby="letter-verdict" className="space-y-3">
           <h2 id="letter-verdict" className="text-xl font-semibold">
-            Verdict
+            {t("letter.verdict.title")}
           </h2>
           <p>{letter.verdict}</p>
           <DecisionBadge decision={letter.decision} />
@@ -69,7 +71,7 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
         </section>
         <section aria-labelledby="letter-why" className="space-y-3">
           <h2 id="letter-why" className="text-xl font-semibold">
-            Why
+            {t("letter.why.title")}
           </h2>
           <p className="whitespace-pre-wrap">{letter.rule}</p>
           {!!letter.triggers.length && (
@@ -84,7 +86,7 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
         </section>
         <section aria-labelledby="letter-legal" className="space-y-4">
           <h2 id="letter-legal" className="text-xl font-semibold">
-            Legal basis
+            {t("letter.legal.title")}
           </h2>
           {letter.articles.length ? (
             letter.articles.map((article, i) => <LegalQuote key={i} article={article} />)
@@ -94,16 +96,16 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
         </section>
         <section aria-labelledby="letter-plan" className="space-y-3">
           <h2 id="letter-plan" className="text-xl font-semibold">
-            What we counted
+            {t("letter.plan.title")}
           </h2>
           <p>{letter.plan}</p>
         </section>
         <section aria-labelledby="letter-results" className="space-y-3">
           <h2 id="letter-results" className="text-xl font-semibold">
-            Results
+            {t("letter.results.title")}
           </h2>
           {letter.table ? (
-            <DataTable caption="Statistical results">
+            <DataTable caption={t("letter.statResults.caption")}>
               <thead>
                 <tr>
                   {letter.table.headers.map((header, i) => (
@@ -131,7 +133,7 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
         </section>
         <section aria-labelledby="letter-conditions" className="space-y-3">
           <h2 id="letter-conditions" className="text-xl font-semibold">
-            Conditions and next steps
+            {t("letter.conditions.title")}
           </h2>
           {letter.conditions.map((condition, i) => (
             <p key={i}>{condition}</p>

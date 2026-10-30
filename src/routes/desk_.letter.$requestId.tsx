@@ -3,9 +3,10 @@ import { getRequest } from "@/lib/ehds";
 import { createDecisionLetter } from "@/lib/decision-letter";
 import { DecisionLetter } from "@/components/DecisionLetter";
 import { EmptyState, ErrorState } from "@/components/States";
+import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/desk_/letter/$requestId")({
-  loader: async ({ params }) => createDecisionLetter(await getRequest(params.requestId)),
+  loader: async ({ params }) => getRequest(params.requestId),
   head: () => ({ meta: [{ title: "Decision letter — EHDS Access Desk" }] }),
   pendingComponent: () => <EmptyState title="Loading decision letter…" />,
   errorComponent: ({ reset }) => (
@@ -20,5 +21,12 @@ export const Route = createFileRoute("/desk_/letter/$requestId")({
       </a>
     </div>
   ),
-  component: () => <DecisionLetter letter={Route.useLoaderData()} />,
+  component: LetterPage,
 });
+
+function LetterPage() {
+  const result = Route.useLoaderData();
+  const t = useT();
+  const letter = createDecisionLetter(result, new Date(), t);
+  return <DecisionLetter letter={letter} />;
+}

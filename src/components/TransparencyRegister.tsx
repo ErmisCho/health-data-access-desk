@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { listRegister, type RegisterEntry, type Decision } from "@/lib/ehds";
 import { DecisionBadge } from "./DecisionBadge";
 import { SiteHeader } from "./SiteHeader";
+import { useT } from "@/lib/i18n";
 
 export function TransparencyRegister() {
+  const t = useT();
   const [entries, setEntries] = useState<RegisterEntry[]>([]);
   const [filter, setFilter] = useState<Decision | "">("");
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -33,20 +35,12 @@ export function TransparencyRegister() {
     <div className="min-h-screen bg-landing text-foreground">
       <SiteHeader />
       <main id="main-content" className="mx-auto max-w-6xl space-y-6 px-5 py-10 sm:px-6 sm:py-16">
-        <h1 className="font-display text-3xl font-semibold sm:text-4xl">Transparency register</h1>
-        <p className="max-w-3xl text-lg text-muted-foreground">
-          This public register lists up to 200 of the latest decided requests, newest first. We
-          publish a reference, submission date, organisation type, purpose category, decision and
-          relevant EHDS articles. Requests awaiting review are excluded.
-        </p>
-        <p className="max-w-3xl text-muted-foreground">
-          We deliberately omit personal and organisation names, original request identifiers,
-          free-text purposes and questions, and all patient data, answers and cohort sizes.
-          References identify register entries only; categories use standard labels.
-        </p>
+        <h1 className="font-display text-3xl font-semibold sm:text-4xl">{t("register.title")}</h1>
+        <p className="max-w-3xl text-lg text-muted-foreground">{t("register.intro")}</p>
+        <p className="max-w-3xl text-muted-foreground">{t("register.privacy")}</p>
         <div className="flex flex-wrap items-center gap-3">
           <label htmlFor="decision-filter" className="font-medium">
-            Filter by decision
+            {t("register.filterLabel")}
           </label>
           <select
             id="decision-filter"
@@ -54,53 +48,56 @@ export function TransparencyRegister() {
             value={filter}
             onChange={(event) => setFilter(event.target.value as Decision | "")}
           >
-            <option value="">All decisions</option>
-            <option value="REJECT">Rejected</option>
-            <option value="APPROVE_STATISTICAL">Approved for statistics</option>
-            <option value="APPROVE_SPE">Approved for secure processing</option>
+            <option value="">{t("register.all")}</option>
+            <option value="REJECT">{t("register.rejected")}</option>
+            <option value="APPROVE_STATISTICAL">{t("register.approvedStats")}</option>
+            <option value="APPROVE_SPE">{t("register.approvedSpe")}</option>
           </select>
         </div>
-        {status === "loading" && <p role="status">Loading decisions…</p>}
+        {status === "loading" && <p role="status">{t("register.loading")}</p>}
         {status === "error" && (
           <div role="alert" className="space-y-3">
-            <p>The register could not be loaded. Please try again.</p>
+            <p>{t("register.loadError")}</p>
             <button
               className="min-h-11 rounded border border-input bg-background px-4 underline focus-visible:outline-2 focus-visible:outline-ring"
               onClick={() => setAttempt((value) => value + 1)}
             >
-              Try again
+              {t("register.tryAgain")}
             </button>
           </div>
         )}
         {status === "ready" && (
           <>
             <p role="status">
-              {visible.length} {visible.length === 1 ? "decision" : "decisions"} shown
+              {visible.length}{" "}
+              {visible.length === 1
+                ? t("register.count.singular")
+                : t("register.count.plural")}
             </p>
             {visible.length === 0 ? (
               <p>
                 {entries.length === 0
-                  ? "No decided requests have been published yet."
-                  : "No decisions match this filter."}
+                  ? t("register.empty.noDecisions")
+                  : t("register.empty.noMatch")}
               </p>
             ) : (
               <div
                 role="region"
-                aria-label="Published decisions"
+                aria-label={t("register.ariaPublished")}
                 tabIndex={0}
                 className="overflow-x-auto rounded border border-border focus-visible:outline-2 focus-visible:outline-ring"
               >
                 <table className="w-full min-w-[760px] text-left text-sm">
-                  <caption className="sr-only">Public decisions, newest submission first</caption>
+                  <caption className="sr-only">{t("register.caption")}</caption>
                   <thead className="bg-muted">
                     <tr>
                       {[
-                        "Reference",
-                        "Submission date",
-                        "Organisation type",
-                        "Purpose category",
-                        "Decision",
-                        "Articles",
+                        t("register.col.reference"),
+                        t("register.col.submissionDate"),
+                        t("register.col.orgType"),
+                        t("register.col.purposeCategory"),
+                        t("register.col.decision"),
+                        t("register.col.articles"),
                       ].map((heading) => (
                         <th key={heading} scope="col" className="px-4 py-3 font-semibold">
                           {heading}

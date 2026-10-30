@@ -8,44 +8,47 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-
-const steps = [
-  {
-    icon: ClipboardPenLine,
-    title: "Describe your request",
-    text: "Set out the purpose, the data you need and the result you want. Unclear requests are held for staff review.",
-  },
-  {
-    icon: Scale,
-    title: "Check the purpose",
-    text: "Rules check the purpose against EHDS Chapter IV, including permitted uses and the prohibited purposes in Article 54.",
-  },
-  {
-    icon: FileCheck2,
-    title: "Receive a reasoned outcome",
-    text: "Get a decision letter and, where approved, anonymised statistics or a route to a secure processing environment.",
-  },
-];
-
-const questions = [
-  {
-    id: "privacy",
-    title: "What happens to data and privacy?",
-    text: "Patient records stay within the protected processing environment. Patient data never goes to AI. Opted-out patients are excluded. Statistics use small-cell suppression: counts below 10 are shown as “<10”. Approved access to pseudonymised records takes place in a secure processing environment, without exporting patient records.",
-  },
-  {
-    id: "legal",
-    title: "What is the legal basis?",
-    text: "The desk checks secondary-use requests under Regulation (EU) 2025/327, Chapter IV. Article 54 covers prohibited purposes. Articles 53 and 69 support the statistics route; Articles 53, 66, 68 and 73 govern the secure processing route. Each outcome cites the relevant articles so staff can review the reasoning.",
-  },
-  {
-    id: "decisions",
-    title: "How are decisions made?",
-    text: "Deterministic rules assess the request. Prohibited purposes are rejected; eligible requests can receive anonymised statistics or be directed to a secure processing environment. A fixed program computes the statistics. Unclear cases are held for staff review. The same request under the same rules and data produces the same answer. The HDAB makes the final decision.",
-  },
-];
+import { useT } from "@/lib/i18n";
 
 export function LandingPage() {
+  const t = useT();
+
+  const steps = [
+    {
+      icon: ClipboardPenLine,
+      title: t("landing.step1.title"),
+      text: t("landing.step1.text"),
+    },
+    {
+      icon: Scale,
+      title: t("landing.step2.title"),
+      text: t("landing.step2.text"),
+    },
+    {
+      icon: FileCheck2,
+      title: t("landing.step3.title"),
+      text: t("landing.step3.text"),
+    },
+  ];
+
+  const questions = [
+    {
+      id: "privacy",
+      title: t("landing.faq.privacy.title"),
+      text: t("landing.faq.privacy.text"),
+    },
+    {
+      id: "legal",
+      title: t("landing.faq.legal.title"),
+      text: t("landing.faq.legal.text"),
+    },
+    {
+      id: "decisions",
+      title: t("landing.faq.decisions.title"),
+      text: t("landing.faq.decisions.text"),
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-landing font-sans text-foreground">
       <SiteHeader />
@@ -56,17 +59,16 @@ export function LandingPage() {
         >
           <div>
             <p className="mb-5 font-mono text-xs uppercase tracking-widest text-accent">
-              EHDS Chapter IV · Secondary use
+              {t("landing.eyebrow")}
             </p>
             <h1
               id="hero-title"
               className="max-w-2xl font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl lg:text-6xl"
             >
-              Can this health-data request be approved?
+              {t("landing.hero")}
             </h1>
             <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              Turn a request into a clear, consistent outcome with cited legal reasons and privacy
-              safeguards.
+              {t("landing.heroSub")}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-5">
               <Button
@@ -75,34 +77,36 @@ export function LandingPage() {
                 className="min-h-12 bg-accent text-accent-foreground hover:bg-accent/90"
               >
                 <Link to="/desk">
-                  Submit a request <ArrowRight aria-hidden="true" />
+                  {t("landing.cta.submit")} <ArrowRight aria-hidden="true" />
                 </Link>
               </Button>
               <Link
                 to="/examples"
                 className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-4"
               >
-                See examples
+                {t("landing.cta.examples")}
               </Link>
               <Link
                 to="/how-we-decide"
                 className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-4"
               >
-                How we decide
+                {t("landing.cta.howWeDecide")}
               </Link>
             </div>
             <ul aria-label="Safeguards" className="mt-8 flex flex-wrap gap-2">
-              {["Legal basis cited", "No patient data leaves", "Same answer every time"].map(
-                (chip) => (
-                  <li
-                    key={chip}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium"
-                  >
-                    <Check aria-hidden="true" className="size-3.5 text-accent" />
-                    {chip}
-                  </li>
-                ),
-              )}
+              {[
+                t("landing.chip.legalBasis"),
+                t("landing.chip.noPatientData"),
+                t("landing.chip.sameAnswer"),
+              ].map((chip) => (
+                <li
+                  key={chip}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium"
+                >
+                  <Check aria-hidden="true" className="size-3.5 text-accent" />
+                  {chip}
+                </li>
+              ))}
             </ul>
           </div>
           <aside
@@ -111,22 +115,13 @@ export function LandingPage() {
           >
             <ShieldCheck aria-hidden="true" className="mb-5 size-8 text-accent" />
             <h2 id="outputs-title" className="font-display text-2xl font-semibold">
-              What you get
+              {t("landing.whatYouGet.title")}
             </h2>
             <ul className="mt-5 space-y-5">
               {[
-                [
-                  "A decision you can inspect",
-                  "A reasoned letter with the legal articles behind the outcome.",
-                ],
-                [
-                  "A protected route to data",
-                  "Anonymised statistics or secure access to pseudonymised records, where approved.",
-                ],
-                [
-                  "A clear handover to staff",
-                  "Unclear requests held for review before a final decision.",
-                ],
+                [t("landing.whatYouGet.item1.title"), t("landing.whatYouGet.item1.text")],
+                [t("landing.whatYouGet.item2.title"), t("landing.whatYouGet.item2.text")],
+                [t("landing.whatYouGet.item3.title"), t("landing.whatYouGet.item3.text")],
               ].map(([title, text]) => (
                 <li key={title}>
                   <p className="font-medium">{title}</p>
@@ -139,9 +134,9 @@ export function LandingPage() {
 
         <section aria-labelledby="steps-title" className="border-t border-border py-12 sm:py-16">
           <h2 id="steps-title" className="font-display text-3xl font-semibold">
-            How it works
+            {t("landing.howItWorks.title")}
           </h2>
-          <ol aria-label="How it works" className="mt-8 grid gap-8 md:grid-cols-3">
+          <ol aria-label={t("landing.steps.list")} className="mt-8 grid gap-8 md:grid-cols-3">
             {steps.map(({ icon: Icon, title, text }, index) => (
               <li key={title}>
                 <div className="mb-4 flex items-center gap-3 text-accent">
@@ -159,16 +154,16 @@ export function LandingPage() {
           aria-labelledby="proof-title"
           className="rounded-lg bg-primary px-6 py-10 text-primary-foreground sm:px-10"
         >
-          <p className="font-mono text-xs uppercase tracking-widest">Measured, with limits</p>
+          <p className="font-mono text-xs uppercase tracking-widest">{t("landing.proof.eyebrow")}</p>
           <h2 id="proof-title" className="mt-3 font-display text-3xl font-semibold">
-            Tested before the next request
+            {t("landing.proof.title")}
           </h2>
           <dl className="mt-8 grid grid-cols-2 gap-8 lg:grid-cols-4">
             {[
-              ["10/10", "sample decisions correct"],
-              ["6/6", "statistics checks correct"],
-              ["0", "leaks in sample tests"],
-              ["42", "jury test requests: 0 wrong decisions, 0 leaks"],
+              [t("landing.proof.stat1.value"), t("landing.proof.stat1.label")],
+              [t("landing.proof.stat2.value"), t("landing.proof.stat2.label")],
+              [t("landing.proof.stat3.value"), t("landing.proof.stat3.label")],
+              [t("landing.proof.stat4.value"), t("landing.proof.stat4.label")],
             ].map(([value, label]) => (
               <div key={label}>
                 <dt className="text-sm">{label}</dt>
@@ -177,9 +172,7 @@ export function LandingPage() {
             ))}
           </dl>
           <p className="mt-8 border-t border-primary-foreground/30 pt-5 text-sm leading-relaxed">
-            Measured on 30 October 2026 against the live backend, with consistent results over three
-            runs. These are test requests, not evidence of performance on all real-world requests or
-            a guarantee of future results.
+            {t("landing.proof.disclaimer")}
           </p>
         </section>
 
@@ -188,20 +181,13 @@ export function LandingPage() {
           aria-labelledby="ai-title"
           className="grid gap-6 border-b border-border py-12 sm:py-16 md:grid-cols-[1fr_2fr] md:gap-12"
         >
-          <h2 id="ai-title" className="font-display text-3xl font-semibold">
-            Rules decide.
-            <br />
-            People remain responsible.
+          <h2 id="ai-title" className="font-display text-3xl font-semibold whitespace-pre-line">
+            {t("landing.aiDisclosure.title")}
           </h2>
           <div className="space-y-5">
-            <p>
-              Deterministic rules decide the outcome, and a fixed program calculates the statistics.
-              No AI is used today. If enabled later, AI can only make outcomes stricter. Patient
-              data never goes to AI.
-            </p>
+            <p>{t("landing.aiDisclosure.p1")}</p>
             <p className="border-l-4 border-accent pl-5 font-medium">
-              This is decision support for Health Data Access Body staff. Final decisions rest with
-              the HDAB.
+              {t("landing.aiDisclosure.callout")}
             </p>
           </div>
         </section>
@@ -212,7 +198,7 @@ export function LandingPage() {
           className="grid gap-6 py-12 sm:py-16 md:grid-cols-[1fr_2fr] md:gap-12"
         >
           <h2 id="faq-title" className="font-display text-3xl font-semibold">
-            Before you begin
+            {t("landing.faq.title")}
           </h2>
           <Accordion type="single" collapsible>
             {questions.map(({ id, title, text }) => (
@@ -228,16 +214,16 @@ export function LandingPage() {
       </main>
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-5 px-5 py-6 text-sm sm:px-6">
-          <p className="text-muted-foreground">EHDS Access Desk · Health Data Access Body</p>
+          <p className="text-muted-foreground">{t("landing.footer.credit")}</p>
           <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-3">
             <Link to="/desk" className="underline underline-offset-4">
-              Open the desk
+              {t("landing.footer.openDesk")}
             </Link>
             <a href="#faq" className="underline underline-offset-4">
-              Privacy and legal basis
+              {t("landing.footer.privacy")}
             </a>
             <a href="#ai-disclosure" className="underline underline-offset-4">
-              AI disclosure
+              {t("landing.footer.aiDisclosure")}
             </a>
           </nav>
         </div>

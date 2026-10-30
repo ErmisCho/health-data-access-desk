@@ -7,6 +7,7 @@ import { LifecycleStepper } from "./LifecycleStepper";
 import { ExplanationPanel } from "./ExplanationPanel";
 import { ErrorState } from "./States";
 import { Button } from "./ui/button";
+import { useT } from "@/lib/i18n";
 
 export function DecisionDetails({
   result,
@@ -19,6 +20,7 @@ export function DecisionDetails({
   onDownloadAttempt?: () => void;
   request?: { purpose?: string; question?: string } | undefined;
 }) {
+  const t = useT();
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const cohort = result.answer?.["cohort_size"];
@@ -38,7 +40,9 @@ export function DecisionDetails({
       <DecisionBadge decision={result.decision} />
       <div>
         <Button asChild variant="outline">
-          <a href={`/desk/letter/${encodeURIComponent(result.request_id)}`}>View decision letter</a>
+          <a href={`/desk/letter/${encodeURIComponent(result.request_id)}`}>
+            {t("decision.viewLetter")}
+          </a>
         </Button>
       </div>
       <LifecycleStepper
@@ -47,11 +51,13 @@ export function DecisionDetails({
       />
       {result.needs_review && (
         <p className="font-semibold" role="status">
-          Needs staff review
+          {t("decision.needsReview")}
         </p>
       )}
       <div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">Cited articles</p>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          {t("decision.citedArticles")}
+        </p>
         <div className="mt-1 flex flex-wrap gap-2">
           {result.articles.map((a) => (
             <span
@@ -64,7 +70,9 @@ export function DecisionDetails({
         </div>
       </div>
       <div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">Reason</p>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          {t("decision.reason")}
+        </p>
         <p className="mt-1">{result.reason}</p>
       </div>
       {result.explanation && (
@@ -77,13 +85,13 @@ export function DecisionDetails({
       )}
       {result.population && (
         <p>
-          Eligible patients:{" "}
+          {t("decision.eligiblePatients")}{" "}
           <span className="font-mono">{result.population.eligible_patients}</span>
         </p>
       )}
       {result.parse_errors?.length ? (
         <div>
-          <p className="font-semibold">Definitions needing review</p>
+          <p className="font-semibold">{t("decision.definitionsNeedReview")}</p>
           <ul className="list-disc pl-5">
             {result.parse_errors.map((error, i) => (
               <li key={i}>
@@ -96,37 +104,41 @@ export function DecisionDetails({
       {result.decision === "APPROVE_STATISTICAL" && <ResultsTable answer={result.answer} />}
       {(result.decision === "APPROVE_SPE" || staff) && (
         <p>
-          Cohort size:{" "}
+          {t("decision.cohortSize")}{" "}
           <span className="font-mono">
-            {typeof cohort === "number" || typeof cohort === "string" ? cohort : "Not provided"}
+            {typeof cohort === "number" || typeof cohort === "string"
+              ? cohort
+              : t("decision.notProvided")}
           </span>
         </p>
       )}
       {staff && (
         <div>
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
-            Secure environment
+            {t("decision.secureEnv")}
           </p>
           {result.decision === "APPROVE_SPE" ? (
             <>
               <p className="mt-1">
                 {result.spe_schema
-                  ? `Schema: ${result.spe_schema}`
-                  : "Provisioning status not provided"}{" "}
-                · downloads blocked
+                  ? `${t("decision.speSchema")} ${result.spe_schema}`
+                  : t("decision.provisioningNotProvided")}{" "}
+                {t("decision.downloadsBlocked")}
               </p>
               <button
                 onClick={download}
                 disabled={busy}
                 className="mt-2 rounded border border-input px-3 py-1 text-sm hover:bg-muted disabled:opacity-50"
               >
-                {busy ? "Checking…" : "Download"}
+                {busy ? t("decision.checking") : t("decision.download")}
               </button>
               {message && <ErrorState>{message}</ErrorState>}
             </>
           ) : (
             <p className="mt-1">
-              {result.decision === "REJECT" ? "Not applicable" : "Not required"}
+              {result.decision === "REJECT"
+                ? t("decision.notApplicable")
+                : t("decision.notRequired")}
             </p>
           )}
         </div>

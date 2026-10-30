@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { TimelineEvent } from "@/lib/ehds";
+import { useT } from "@/lib/i18n";
 
 const steps = ["Submitted", "Assessed", "Staff review", "Decided", "Fulfilled"] as const;
 export type LifecycleStep = (typeof steps)[number];
@@ -74,6 +75,17 @@ export function LifecycleStepper({
   timestamps?: Partial<Record<LifecycleStep, string>>;
   timeline?: TimelineEvent[];
 }) {
+  const t = useT();
+
+  // Map internal step names to translated labels
+  const stepLabel: Record<LifecycleStep, string> = {
+    Submitted: t("lifecycle.Submitted"),
+    Assessed: t("lifecycle.Assessed"),
+    "Staff review": t("lifecycle.StaffReview"),
+    Decided: t("lifecycle.Decided"),
+    Fulfilled: t("lifecycle.Fulfilled"),
+  };
+
   // If a timeline is supplied, derive all display values from it.
   const hasTimeline = timeline && timeline.length > 0;
   const resolved = hasTimeline
@@ -101,7 +113,7 @@ export function LifecycleStepper({
   const isLastStep = currentIndex === visibleSteps.length - 1;
 
   return (
-    <ol aria-label="Request lifecycle" className="grid grid-cols-2 gap-3 sm:auto-cols-fr sm:grid-flow-col sm:grid-cols-none">
+    <ol aria-label={t("lifecycle.aria")} className="grid grid-cols-2 gap-3 sm:auto-cols-fr sm:grid-flow-col sm:grid-cols-none">
       {visibleSteps.map((step, index) => (
         <li
           key={step}
@@ -111,13 +123,17 @@ export function LifecycleStepper({
             index <= currentIndex && "border-accent",
           )}
         >
-          <span className={cn("block", step === current && !terminal && "font-semibold")}>{step}</span>
+          <span className={cn("block", step === current && !terminal && "font-semibold")}>
+            {stepLabel[step]}
+          </span>
           <span className="text-xs text-muted-foreground">
             {index < currentIndex
-              ? "Complete"
+              ? t("lifecycle.status.complete")
               : step === current
-              ? terminal && isLastStep ? "Complete" : "Current"
-              : "Pending"}
+              ? terminal && isLastStep
+                ? t("lifecycle.status.complete")
+                : t("lifecycle.status.current")
+              : t("lifecycle.status.pending")}
           </span>
           {effectiveTimestamps[step] && (
             <time className="mt-1 block break-words font-mono text-xs" dateTime={effectiveTimestamps[step]}>
