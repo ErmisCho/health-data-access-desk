@@ -167,7 +167,7 @@ describe("SiteHeader first-visit dialog accessibility", () => {
         </HdabProvider>
       </LangProvider>,
     );
-    await screen.findByText("Demonstration service · Health Data Access Body");
+    await screen.findByText("EHDS Access Desk");
     return router;
   }
 

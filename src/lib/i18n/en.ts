@@ -21,6 +21,7 @@ export const en = {
     "Value withheld to protect privacy. Small counts (<10) and suppressed statistics are not disclosed.",
   // ── Site header ─────────────────────────────────────────────────────────────
   "nav.demoService": "Demonstration service · Health Data Access Body",
+  "nav.changeRole": "Change view role",
   "nav.settings": "Language and access body",
   "nav.language": "Language",
   "nav.accessBody": "Access body",

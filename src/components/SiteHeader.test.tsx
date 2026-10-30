@@ -14,6 +14,8 @@ import { HdabProvider } from "@/lib/hdab";
 import { PreferencesProvider, usePreferences } from "@/lib/preferences";
 import { saveHdab } from "@/lib/hdab-selection";
 import { supabase } from "@/integrations/supabase/client";
+import { en } from "@/lib/i18n/en";
+import { de } from "@/lib/i18n/de";
 
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { functions: { invoke: vi.fn() } } }));
 const configs = [
@@ -66,7 +68,7 @@ async function mount(landing = false) {
       </HdabProvider>
     </LangProvider>,
   );
-  await screen.findByText("Demonstration service · Health Data Access Body");
+  await screen.findByText("EHDS Access Desk");
   return router;
 }
 
@@ -103,7 +105,10 @@ it("asks once, saves the body and role across remounts, and restores focus", asy
   cleanup();
   await mount();
   expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  expect(screen.getByRole("button", { name: "demo" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByRole("button", { name: "Change view role: demo" })).toHaveAttribute(
+    "aria-haspopup",
+    "menu",
+  );
   fireEvent.click(screen.getByRole("button", { name: "Language and access body" }));
   expect(screen.getByRole("combobox", { name: "Access body" })).toHaveValue("de");
 });
@@ -119,10 +124,74 @@ it("changes preferences in the globe popover and closes it with Escape", async (
   fireEvent.change(screen.getByRole("combobox", { name: "View role" }), {
     target: { value: "staff" },
   });
-  expect(screen.getByRole("button", { name: "staff" })).toHaveAttribute("aria-pressed", "true");
+  expect(screen.getByRole("button", { name: "Change view role: staff" })).toBeInTheDocument();
   fireEvent.keyDown(body, { key: "Escape" });
   await waitFor(() => expect(screen.queryByRole("combobox")).not.toBeInTheDocument());
   expect(globe).toHaveFocus();
+});
+
+it.each(["en", "de"] as const)(
+  "offers all roles in a keyboard accessible %s menu",
+  async (lang) => {
+    const dict = lang === "de" ? de : en;
+    sessionStorage.setItem("ehds-lang", lang);
+    localStorage.setItem("ehds-setup-complete", "true");
+    await mount();
+    for (const role of ["staff", "demo", "applicant"] as const) {
+      const trigger = screen.getByRole("button", {
+        name: new RegExp(`^${dict["nav.changeRole"]}:`),
+      });
+      trigger.focus();
+      fireEvent.keyDown(trigger, { key: "ArrowDown" });
+      const menu = await screen.findByRole("menu");
+      expect(menu).toHaveAccessibleName(trigger.getAttribute("aria-label")!);
+      const items = within(menu).getAllByRole("menuitemradio");
+      expect(items).toHaveLength(3);
+      const current = localStorage.getItem("ehds-role") ?? "applicant";
+      expect(
+        within(menu).getByRole("menuitemradio", {
+          name: dict[`desk.role.${current as "applicant" | "staff" | "demo"}`],
+        }),
+      ).toHaveAttribute("aria-checked", "true");
+      await waitFor(() => expect(items[0]).toHaveFocus());
+      fireEvent.keyDown(items[0], { key: "ArrowDown" });
+      await waitFor(() => expect(items[1]).toHaveFocus());
+      const target = within(menu).getByRole("menuitemradio", { name: dict[`desk.role.${role}`] });
+      target.focus();
+      fireEvent.keyDown(target, { key: "Enter" });
+      await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
+      expect(localStorage.getItem("ehds-role")).toBe(role);
+      expect(
+        screen.getByRole("button", {
+          name: `${dict["nav.changeRole"]}: ${dict[`desk.role.${role}`]}`,
+        }),
+      ).toHaveFocus();
+    }
+    const trigger = screen.getByRole("button", {
+      name: `${dict["nav.changeRole"]}: ${dict["desk.role.applicant"]}`,
+    });
+    fireEvent.keyDown(trigger, { key: "Enter" });
+    const menu = await screen.findByRole("menu");
+    fireEvent.keyDown(menu, { key: "Escape" });
+    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
+    expect(localStorage.getItem("ehds-role")).toBe("applicant");
+  },
+);
+
+it("keeps one fixed-height row and places the service note in the globe menu", async () => {
+  localStorage.setItem("ehds-setup-complete", "true");
+  await mount();
+  const header = screen.getByRole("banner");
+  const nav = within(header).getByRole("navigation");
+  expect(header.children).toHaveLength(1);
+  expect(nav).toHaveClass("h-14", "flex-nowrap");
+  const links = within(nav).getByRole("link", { name: "How we decide" }).parentElement;
+  expect(links).toHaveClass("hidden", "lg:flex");
+  expect(screen.getByRole("button", { name: "Navigation menu" })).toHaveClass("lg:hidden");
+  expect(screen.queryByText(en["nav.demoService"])).not.toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Language and access body" }));
+  expect(screen.getByText(en["nav.demoService"])).toBeInTheDocument();
 });
 
 it("opens the collapsed navigation with the keyboard", async () => {

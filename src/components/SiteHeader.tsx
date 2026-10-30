@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { useHdab } from "@/lib/hdab";
 import { Link } from "@tanstack/react-router";
-import { Globe, Menu } from "lucide-react";
+import { ChevronDown, Globe, Menu, Shield, UserRound } from "lucide-react";
 import { useLang, useT } from "@/lib/i18n";
 import { isRole, ROLES, usePreferences } from "@/lib/preferences";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -10,6 +10,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
@@ -97,57 +99,56 @@ export function SiteHeader() {
   ] as const;
   return (
     <header className="border-b border-primary bg-background text-primary">
-      <div className="border-b border-border bg-muted">
-        <div className="mx-auto flex min-h-7 max-w-6xl items-center gap-2 px-5 py-1 text-xs sm:h-7 sm:py-0 sm:px-6">
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 20 24"
-            className="h-4 w-3.5 shrink-0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          >
-            <path d="M2 2h16v10c0 5-4 8-8 10-4-2-8-5-8-10Z" />
-          </svg>
-          <span>{t("nav.demoService")}</span>
-        </div>
-      </div>
       <nav
         aria-label={t("nav.mainNav")}
-        className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-5 sm:px-6"
+        className="mx-auto flex h-14 max-w-6xl flex-nowrap items-center justify-between gap-2 px-3 sm:px-6"
       >
-        <Link to="/" className="shrink-0 text-sm font-semibold tracking-tight sm:text-lg">
+        <Link
+          to="/"
+          className="min-w-0 truncate text-sm font-semibold tracking-tight sm:shrink-0 sm:text-lg"
+        >
           {t("nav.home")}
         </Link>
-        <div className="ml-auto hidden items-center gap-4 xl:flex">
+        <div className="ml-auto hidden shrink-0 items-center gap-3 lg:flex">
           {links.map(([to, key]) => (
             <Link
               key={to}
               to={to}
-              className="inline-flex min-h-11 items-center text-sm underline underline-offset-4"
+              className="inline-flex min-h-11 items-center whitespace-nowrap text-sm underline underline-offset-4"
             >
               {t(key)}
             </Link>
           ))}
         </div>
-        <div
-          className="hidden shrink-0 rounded border border-border p-0.5 md:flex"
-          role="group"
-          aria-label={t("desk.roleLabel")}
-        >
-          {ROLES.map((value) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={role === value}
-              onClick={() => setRole(value)}
-              className={`min-h-11 rounded px-2 text-sm font-medium capitalize ${role === value ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
-            >
-              {t(`desk.role.${value}`)}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center">
+        <div className="ml-auto flex shrink-0 items-center lg:ml-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                aria-label={`${t("nav.changeRole")}: ${t(`desk.role.${role}`)}`}
+                className="inline-flex min-h-11 items-center gap-1 whitespace-nowrap rounded border border-border px-2 text-sm font-medium capitalize hover:bg-muted sm:gap-2"
+              >
+                <UserRound aria-hidden="true" className="size-4 shrink-0" />
+                {t(`desk.role.${role}`)}
+                <ChevronDown aria-hidden="true" className="size-4 shrink-0" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuRadioGroup
+                aria-label={t("desk.roleLabel")}
+                value={role}
+                onValueChange={(value) => {
+                  if (isRole(value)) setRole(value);
+                }}
+              >
+                {ROLES.map((value) => (
+                  <DropdownMenuRadioItem key={value} value={value} className="min-h-11 capitalize">
+                    {t(`desk.role.${value}`)}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Popover>
             <PopoverTrigger asChild>
               <button
@@ -164,6 +165,10 @@ export function SiteHeader() {
               aria-label={t("nav.settings")}
               className="max-h-[var(--radix-popover-content-available-height)] w-80 max-w-[calc(100vw-2rem)] overflow-y-auto"
             >
+              <p className="mb-4 flex items-start gap-2 text-xs text-muted-foreground">
+                <Shield aria-hidden="true" className="size-4 shrink-0" />
+                <span>{t("nav.demoService")}</span>
+              </p>
               <PreferenceFields />
             </PopoverContent>
           </Popover>
@@ -172,7 +177,7 @@ export function SiteHeader() {
               <button
                 type="button"
                 aria-label={t("nav.menu")}
-                className="inline-flex size-11 items-center justify-center rounded hover:bg-muted xl:hidden"
+                className="inline-flex size-11 items-center justify-center rounded hover:bg-muted lg:hidden"
               >
                 <Menu aria-hidden="true" className="size-5" />
               </button>

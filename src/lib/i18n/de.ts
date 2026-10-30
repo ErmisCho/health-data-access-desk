@@ -10,6 +10,7 @@ import type { EnDict } from "./en";
 export const de: { [K in keyof EnDict]: string } = {
   // ── Site header ─────────────────────────────────────────────────────────────
   "nav.demoService": "Demonstrationsdienst · Gesundheitsdaten-Zugangsstelle",
+  "nav.changeRole": "Ansicht wechseln",
   "nav.settings": "Sprache und Zugangsstelle",
   "nav.language": "Sprache",
   "nav.accessBody": "Zugangsstelle",

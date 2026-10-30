@@ -38,7 +38,12 @@ async function renderDesk(entry: string) {
   });
   await router.load();
   render(<PreferencesProvider><RouterProvider router={router} /></PreferencesProvider>);
-  return screen.findByLabelText("View role");
+  return screen.findByRole("button", { name: /^Change view role:/ });
+}
+
+async function selectRole(role: string) {
+  fireEvent.keyDown(screen.getByRole("button", { name: /^Change view role:/ }), { key: "ArrowDown" });
+  fireEvent.click(await screen.findByRole("menuitemradio", { name: role }));
 }
 
 describe("Desk route", () => {
@@ -111,10 +116,7 @@ describe("Desk route", () => {
 
   it.each(["/desk", "/desk?view=unknown"])("opens the applicant view for %s", async (entry) => {
     const roles = await renderDesk(entry);
-    expect(within(roles).getByRole("button", { name: "applicant" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(roles).toHaveAccessibleName("Change view role: applicant");
     // Switch to JSON tab to find Request JSON textarea
     fireEvent.click(screen.getByRole("button", { name: "JSON", hidden: true }));
     expect(screen.getByLabelText("Request JSON")).toBeVisible();
@@ -122,21 +124,15 @@ describe("Desk route", () => {
 
   it("opens the demo from search and preserves applicant state across role changes", async () => {
     const roles = await renderDesk("/desk?view=demo");
-    expect(within(roles).getByRole("button", { name: "demo" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-    fireEvent.click(within(roles).getByRole("button", { name: "applicant" }));
+    expect(roles).toHaveAccessibleName("Change view role: demo");
+    await selectRole("applicant");
     // Switch to JSON tab
     fireEvent.click(screen.getByRole("button", { name: "JSON", hidden: true }));
     const request = screen.getByLabelText("Request JSON");
     fireEvent.change(request, { target: { value: '{"purpose":"research"}' } });
-    fireEvent.click(within(roles).getByRole("button", { name: "staff" }));
-    expect(within(roles).getByRole("button", { name: "staff" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-    fireEvent.click(within(roles).getByRole("button", { name: "applicant" }));
+    await selectRole("staff");
+    expect(roles).toHaveAccessibleName("Change view role: staff");
+    await selectRole("applicant");
     // Switch to JSON tab again — state is preserved inside JsonEditor
     fireEvent.click(screen.getByRole("button", { name: "JSON", hidden: true }));
     expect(screen.getByLabelText("Request JSON")).toBeVisible();
