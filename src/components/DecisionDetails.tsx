@@ -6,6 +6,7 @@ import { DecisionBadge } from "./DecisionBadge";
 import { LifecycleStepper } from "./LifecycleStepper";
 import { ExplanationPanel } from "./ExplanationPanel";
 import { ErrorState } from "./States";
+import { Button } from "./ui/button";
 
 export function DecisionDetails({
   result,
@@ -35,6 +36,11 @@ export function DecisionDetails({
   return (
     <div className="mt-4 space-y-4">
       <DecisionBadge decision={result.decision} />
+      <div>
+        <Button asChild variant="outline">
+          <a href={`/desk/letter/${encodeURIComponent(result.request_id)}`}>View decision letter</a>
+        </Button>
+      </div>
       <LifecycleStepper
         current={result.needs_review ? "Staff review" : "Decided"}
         needsReview={!!result.needs_review}

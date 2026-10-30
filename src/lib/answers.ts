@@ -49,3 +49,14 @@ export function answerColumns(rows: AnswerRow[], showPercentages: boolean): stri
 export function metricLabel(key: string): string {
   return key.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase());
 }
+
+export function formatValue(value: string | number | undefined, percentage = false): string {
+  if (value === undefined) return "—";
+  const text = String(value).trim();
+  if (percentage || /%\s*$/.test(text)) {
+    const numeric = text.replace(/\s*%$/, "");
+    if (numeric !== "" && Number.isFinite(Number(numeric)))
+      return `${Number(numeric).toFixed(1)} %`;
+  }
+  return String(value);
+}

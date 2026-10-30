@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 import { cn } from "@/lib/utils";
+import { formatValue } from "@/lib/answers";
+export { formatValue } from "@/lib/answers";
 
 export function DataTable({ caption, children }: { caption: string; children: ReactNode }) {
   return (
@@ -52,15 +54,4 @@ export function DataCell({
       )}
     </td>
   );
-}
-
-export function formatValue(value: string | number | undefined, percentage = false): string {
-  if (value === undefined) return "—";
-  const text = String(value).trim();
-  if (percentage || /%\s*$/.test(text)) {
-    const numeric = text.replace(/\s*%$/, "");
-    if (numeric !== "" && Number.isFinite(Number(numeric)))
-      return `${Number(numeric).toFixed(1)} %`;
-  }
-  return String(value);
 }

@@ -186,3 +186,24 @@
 .suppressed-cell {
   background: repeating-linear-gradient(135deg, var(--muted) 0 3px, var(--card) 3px 8px);
 }
+
+@media print {
+  .decision-letter-page {
+    max-width: none;
+    padding: 0;
+  }
+  .decision-letter {
+    color: black;
+    background: white;
+  }
+  .decision-letter h2,
+  .decision-letter figcaption {
+    break-after: avoid;
+  }
+  .decision-letter tr {
+    break-inside: avoid;
+  }
+  .decision-letter [role="region"] {
+    overflow: visible;
+  }
+}
