@@ -17,6 +17,14 @@ import type { Lang } from "../i18n";
 
 /** Map English backend text → German translation. */
 const BACKEND_DE: Record<string, string> = {
+  // Register organisation types (exact backend values).
+  "Research institution": "Forschungseinrichtung",
+  "Healthcare provider": "Gesundheitsdienstleister",
+  "Public body": "Öffentliche Stelle",
+  "Insurer": "Versicherer",
+  "Company": "Unternehmen",
+  "Other": "Sonstige",
+
   // ── Decision reasons (result.reason) ─────────────────────────────────────
   "Advertising and marketing are prohibited purposes for health data (Art. 54).":
     "Werbung und Marketing sind verbotene Zwecke für Gesundheitsdaten (Art. 54).",

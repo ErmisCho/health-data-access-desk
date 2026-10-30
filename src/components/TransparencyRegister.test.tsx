@@ -4,6 +4,7 @@ vi.mock("@/integrations/supabase/client", () => ({ supabase: { functions: { invo
 vi.mock("./SiteHeader", () => ({ SiteHeader: () => <header /> }));
 import { supabase } from "@/integrations/supabase/client";
 import { TransparencyRegister } from "./TransparencyRegister";
+import { LangProvider } from "@/lib/i18n";
 
 const invoke = vi.mocked(supabase.functions.invoke);
 const entry = {
@@ -17,7 +18,36 @@ const entry = {
 
 afterEach(() => {
   cleanup();
+  sessionStorage.removeItem("ehds-lang");
+  document.documentElement.lang = "en";
   vi.resetAllMocks();
+});
+
+it("renders every backend organisation type in German", async () => {
+  const organisationTypes = [
+    ["Research institution", "Forschungseinrichtung"],
+    ["Healthcare provider", "Gesundheitsdienstleister"],
+    ["Public body", "Öffentliche Stelle"],
+    ["Insurer", "Versicherer"],
+    ["Company", "Unternehmen"],
+    ["Other", "Sonstige"],
+  ];
+  invoke.mockResolvedValue({
+    data: {
+      entries: organisationTypes.map(([organisation_type], index) => ({
+        ...entry,
+        reference: `HDAB-2026-${index}`,
+        organisation_type,
+      })),
+    },
+    error: null,
+  });
+  sessionStorage.setItem("ehds-lang", "de");
+  render(<LangProvider><TransparencyRegister /></LangProvider>);
+  for (const [english, german] of organisationTypes) {
+    expect(await screen.findByRole("cell", { name: german })).toBeVisible();
+    expect(screen.queryByRole("cell", { name: english })).not.toBeInTheDocument();
+  }
 });
 
 it("loads public entries with GET, renders their fields, and filters locally", async () => {
