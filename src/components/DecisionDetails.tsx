@@ -11,10 +11,12 @@ export function DecisionDetails({
   result,
   staff = false,
   onDownloadAttempt,
+  request,
 }: {
   result: DecisionResult;
   staff?: boolean;
   onDownloadAttempt?: () => void;
+  request?: { purpose?: string; question?: string } | undefined;
 }) {
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -59,7 +61,14 @@ export function DecisionDetails({
         <p className="text-xs uppercase tracking-wider text-muted-foreground">Reason</p>
         <p className="mt-1">{result.reason}</p>
       </div>
-      {result.explanation && <ExplanationPanel explanation={result.explanation} />}
+      {result.explanation && (
+        <ExplanationPanel
+          explanation={result.explanation}
+          purpose={request?.purpose}
+          question={request?.question}
+          approved={result.decision !== "REJECT"}
+        />
+      )}
       {result.population && (
         <p>
           Eligible patients:{" "}

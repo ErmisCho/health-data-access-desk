@@ -38,6 +38,33 @@ afterEach(() => {
   vi.resetAllMocks();
 });
 
+it.each(SAMPLE_ENTRIES)("shows the explanation for sample $id in Demo", async ({ id, request }) => {
+  const phrase = request.purpose.split(" ").slice(0, 3).join(" ");
+  invoke.mockResolvedValue({
+    data: {
+      ...base,
+      request_id: id,
+      explanation: {
+        rule: "Matched purpose",
+        trigger_phrases: [phrase],
+        articles: [],
+        plan_summary: "Count eligible patients per region.",
+      },
+    },
+    error: null,
+  });
+  render(<DemoPanel />);
+  fireEvent.change(screen.getByLabelText("Any sample request"), { target: { value: id } });
+  fireEvent.click(screen.getByRole("button", { name: "Run sample request" }));
+  const panel = await screen.findByRole("region", { name: "Decision explanation" });
+  expect(within(panel).getByText("Request purpose").nextElementSibling?.textContent).toBe(
+    request.purpose,
+  );
+  expect(panel.querySelector("mark")?.textContent).toBe(phrase);
+  expect(within(panel).getByText("Count eligible patients per region.")).toBeInTheDocument();
+  expect(invoke).toHaveBeenCalledWith("requests", { body: request });
+});
+
 const cases = [
   {
     label: "Art. 54 rejection",
@@ -89,9 +116,9 @@ const cases = [
 
 it("offers the seven scenarios in presentation order without fetching on mount", () => {
   render(<DemoPanel />);
-  expect(screen.getAllByRole("button").map((button) => button.textContent)).toEqual(
-    cases.map((scenario, index) => `${index + 1}. ${scenario.label} · ${scenario.id}`),
-  );
+  expect(
+    screen.getAllByRole("button", { name: /^\d\./ }).map((button) => button.textContent),
+  ).toEqual(cases.map((scenario, index) => `${index + 1}. ${scenario.label} · ${scenario.id}`));
   expect(invoke).not.toHaveBeenCalled();
   const proof = screen.getByRole("region", { name: "Proof" });
   expect(proof).toHaveTextContent(

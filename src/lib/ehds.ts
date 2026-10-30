@@ -10,10 +10,13 @@ export interface LegalArticle {
   summary: string;
   quote: string;
   ref: string;
+  point?: string | null;
+  applies?: string | null;
 }
 export interface DecisionExplanation {
   rule: string;
   trigger_phrases: string[];
+  trigger_context?: string[];
   articles: LegalArticle[];
   plan_summary?: string;
 }

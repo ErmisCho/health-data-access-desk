@@ -71,6 +71,7 @@ function Desk() {
 function Applicant() {
   const [text, setText] = useState(JSON.stringify(SAMPLE_ENTRIES[0]!.request, null, 2));
   const [result, setResult] = useState<DecisionResult | null>(null);
+  const [submittedText, setSubmittedText] = useState<{ purpose?: string; question?: string }>({});
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   async function submit() {
@@ -86,6 +87,11 @@ function Applicant() {
     setBusy(true);
     try {
       setResult(await submitRequest(parsed));
+      const source = parsed as Record<string, unknown>;
+      setSubmittedText({
+        ...(typeof source["purpose"] === "string" ? { purpose: source["purpose"] } : {}),
+        ...(typeof source["question"] === "string" ? { question: source["question"] } : {}),
+      });
     } catch (error) {
       setError(error instanceof Error ? error.message : "Request failed. Please try again.");
     } finally {
@@ -136,7 +142,7 @@ function Applicant() {
       <section aria-live="polite" className="min-w-0 rounded border border-border bg-card p-6">
         <h2 className="font-display text-2xl font-semibold">Decision</h2>
         {result ? (
-          <DecisionDetails key={JSON.stringify(result)} result={result} />
+          <DecisionDetails key={JSON.stringify(result)} result={result} request={submittedText} />
         ) : (
           <EmptyState
             title={busy ? "Evaluating request…" : "Submit a request to see the HDAB decision."}

@@ -13,7 +13,7 @@ const scenarios = [
   { key: "download", id: "R05", label: "Blocked download" },
   { key: "downgrade", id: "R09", label: "Records downgraded to statistics" },
 ] as const;
-type Scenario = (typeof scenarios)[number];
+type Scenario = (typeof scenarios)[number] | { key: "request"; id: string; label: string };
 type Download = Awaited<ReturnType<typeof downloadRequest>>;
 interface Outcome {
   scenario: Scenario;
@@ -26,6 +26,8 @@ function pointAt({ scenario, result, download }: Outcome): string {
     answerRows(result.answer).find((row) => row.groups.includes(group))?.metrics[key] ??
     "Not provided";
   switch (scenario.key) {
+    case "request":
+      return result.reason;
     case "purpose":
       return `Numerical answer: ${result.answer === null ? "null (no numerical answer)" : "an answer was returned — inspect the result"}.`;
     case "statistics":
@@ -48,6 +50,7 @@ function pointAt({ scenario, result, download }: Outcome): string {
 }
 
 export function DemoPanel() {
+  const [sampleId, setSampleId] = useState(SAMPLE_ENTRIES[0]!.id);
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   const [running, setRunning] = useState<Scenario | null>(null);
   const [error, setError] = useState("");
@@ -110,6 +113,28 @@ export function DemoPanel() {
               </li>
             ))}
           </ol>
+          <label className="mt-6 block text-sm font-medium">
+            Any sample request
+            <select
+              value={sampleId}
+              onChange={(event) => setSampleId(event.target.value)}
+              disabled={running !== null}
+              className="mt-2 block w-full min-w-0 rounded border border-input bg-card px-3 py-2 text-foreground"
+            >
+              {SAMPLE_ENTRIES.map((entry) => (
+                <option key={entry.id} value={entry.id}>
+                  {entry.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            disabled={running !== null}
+            onClick={() => run({ key: "request", id: sampleId, label: "Sample request" })}
+            className="mt-3 rounded bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
+          >
+            Run sample request
+          </button>
         </section>
         <section
           aria-label="Live demo result"
@@ -148,7 +173,11 @@ export function DemoPanel() {
                   Requested: {request.requested_as} · {request.requested_format}
                 </p>
               )}
-              <DecisionDetails key={JSON.stringify(outcome)} result={outcome.result} />
+              <DecisionDetails
+                key={JSON.stringify(outcome)}
+                result={outcome.result}
+                request={request || undefined}
+              />
             </>
           )}
           {!outcome && !running && !error && (

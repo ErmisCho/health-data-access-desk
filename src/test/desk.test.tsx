@@ -6,10 +6,16 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+vi.mock("@/integrations/supabase/client", () => ({ supabase: { functions: { invoke: vi.fn() } } }));
+import { supabase } from "@/integrations/supabase/client";
+import { SAMPLE_ENTRIES } from "@/lib/ehds";
 import { Route as DeskRoute } from "@/routes/desk";
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.resetAllMocks();
+});
 
 async function renderDesk(entry: string) {
   const root = createRootRoute();
@@ -29,6 +35,41 @@ async function renderDesk(entry: string) {
 }
 
 describe("Desk route", () => {
+  it.each(SAMPLE_ENTRIES)(
+    "shows the submitted purpose and explanation for applicant sample $id",
+    async ({ id, request }) => {
+      const phrase = request.purpose.split(" ").slice(0, 3).join(" ");
+      vi.mocked(supabase.functions.invoke).mockResolvedValue({
+        data: {
+          request_id: id,
+          decision: "APPROVE_STATISTICAL",
+          articles: ["53"],
+          reason: "Allowed",
+          answer: null,
+          explanation: {
+            rule: "Matched purpose",
+            trigger_phrases: [phrase],
+            articles: [],
+            plan_summary: "Count eligible patients per region.",
+          },
+        },
+        error: null,
+      });
+      await renderDesk("/desk");
+      fireEvent.change(screen.getByLabelText("Sample request"), {
+        target: { value: String(SAMPLE_ENTRIES.findIndex((entry) => entry.id === id)) },
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Submit request" }));
+      const panel = await screen.findByRole("region", { name: "Decision explanation" });
+      expect(within(panel).getByText("Request purpose").nextElementSibling?.textContent).toBe(
+        request.purpose,
+      );
+      expect(panel.querySelector("mark")?.textContent).toBe(phrase);
+      expect(within(panel).getByText("Count eligible patients per region.")).toBeInTheDocument();
+      expect(supabase.functions.invoke).toHaveBeenCalledWith("requests", { body: request });
+    },
+  );
+
   it.each(["/desk", "/desk?view=unknown"])("opens the applicant view for %s", async (entry) => {
     const roles = await renderDesk(entry);
     expect(within(roles).getByRole("button", { name: "applicant" })).toHaveAttribute(
