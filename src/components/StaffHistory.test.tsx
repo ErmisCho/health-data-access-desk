@@ -7,10 +7,59 @@ import {
   within,
 } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { functions: { invoke: vi.fn() } } }));
+
+// Extend mock to include auth.signInWithPassword and auth.signOut
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: {
+    functions: { invoke: vi.fn() },
+    auth: {
+      signInWithPassword: vi.fn(),
+      signOut: vi.fn(),
+    },
+  },
+}));
 import { supabase } from "@/integrations/supabase/client";
 import { StaffHistory } from "./StaffHistory";
 const invoke = vi.mocked(supabase.functions.invoke);
+const signIn = vi.mocked(supabase.auth.signInWithPassword);
+const signOut = vi.mocked(supabase.auth.signOut);
+
+const STAFF_USER = {
+  id: "staff-uuid-1",
+  email: "staff@example.com",
+  app_metadata: { role: "staff" },
+};
+
+/** Mock a successful staff sign-in. */
+function mockStaffSignIn() {
+  signIn.mockResolvedValue({
+    data: {
+      user: STAFF_USER,
+      session: { access_token: "tok", refresh_token: "rtok" },
+    },
+    error: null,
+  } as ReturnType<typeof supabase.auth.signInWithPassword> extends Promise<infer T> ? T : never);
+}
+
+/**
+ * Render StaffHistory and perform a sign-in so the history view is visible.
+ * Any invoke mocks for the "requests" endpoint must be set up BEFORE calling
+ * this helper, because sign-in triggers an immediate history refresh.
+ */
+async function renderAndSignIn() {
+  mockStaffSignIn();
+  render(<StaffHistory />);
+  // Fill in sign-in form
+  fireEvent.change(screen.getByLabelText(/email/i), {
+    target: { value: "staff@example.com" },
+  });
+  fireEvent.change(screen.getByLabelText(/password/i), {
+    target: { value: "password123" },
+  });
+  fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+  // Wait for signed-in state (badge appears)
+  await screen.findByText("staff@example.com");
+}
 
 const row = {
   request_id: "R05",
@@ -41,16 +90,76 @@ const saved = {
   spe_schema: "spe_r05",
   answer: { cohort_size: 1152 },
 };
-const emptyHistory = {
-  requests: [],
-  downloads: [],
-  staff_actions: [],
-};
 
 afterEach(() => {
   cleanup();
   vi.resetAllMocks();
 });
+
+// ---------------------------------------------------------------------------
+// Auth gate
+// ---------------------------------------------------------------------------
+
+it("shows sign-in form when not authenticated", () => {
+  render(<StaffHistory />);
+  expect(screen.getByRole("heading", { name: /staff sign-in/i })).toBeInTheDocument();
+  expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+});
+
+it("shows error when sign-in fails", async () => {
+  signIn.mockResolvedValue({
+    data: { user: null, session: null },
+    error: { message: "Invalid credentials" },
+  } as ReturnType<typeof supabase.auth.signInWithPassword> extends Promise<infer T> ? T : never);
+  render(<StaffHistory />);
+  fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "bad@example.com" } });
+  fireEvent.change(screen.getByLabelText(/password/i), { target: { value: "wrong" } });
+  fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+  expect(await screen.findByRole("alert")).toHaveTextContent(/sign-in failed/i);
+});
+
+it("shows error when signed-in user lacks staff role", async () => {
+  signIn.mockResolvedValue({
+    data: {
+      user: { ...STAFF_USER, app_metadata: { role: "user" } },
+      session: { access_token: "tok" },
+    },
+    error: null,
+  } as ReturnType<typeof supabase.auth.signInWithPassword> extends Promise<infer T> ? T : never);
+  signOut.mockResolvedValue({ error: null });
+  render(<StaffHistory />);
+  fireEvent.change(screen.getByLabelText(/email/i), { target: { value: "user@example.com" } });
+  fireEvent.change(screen.getByLabelText(/password/i), { target: { value: "password123" } });
+  fireEvent.click(screen.getByRole("button", { name: /sign in/i }));
+  expect(await screen.findByRole("alert")).toHaveTextContent(/staff role/i);
+});
+
+it("shows history after successful sign-in", async () => {
+  invoke.mockResolvedValueOnce({
+    data: { requests: [row], downloads: [], staff_actions: [] },
+    error: null,
+  });
+  invoke.mockResolvedValue({ data: saved, error: null });
+  await renderAndSignIn();
+  expect(await screen.findByText("1152")).toBeInTheDocument();
+});
+
+it("sign-out returns to sign-in form", async () => {
+  invoke.mockResolvedValue({
+    data: { requests: [], downloads: [], staff_actions: [] },
+    error: null,
+  });
+  signOut.mockResolvedValue({ error: null });
+  await renderAndSignIn();
+  await screen.findByText(/past requests/i);
+  fireEvent.click(screen.getByRole("button", { name: /sign out/i }));
+  await screen.findByRole("heading", { name: /staff sign-in/i });
+});
+
+// ---------------------------------------------------------------------------
+// Existing tests updated for auth gate
+// ---------------------------------------------------------------------------
 
 it("loads live history, saved results and refreshed blocked-download attempts", async () => {
   let attempted = false;
@@ -82,7 +191,7 @@ it("loads live history, saved results and refreshed blocked-download attempts", 
     }
     throw new Error("Unexpected API call");
   });
-  render(<StaffHistory />);
+  await renderAndSignIn();
   expect(await screen.findByText("1152")).toBeInTheDocument();
   expect(screen.getByText("Saved reason")).toBeInTheDocument();
   expect(
@@ -128,7 +237,7 @@ it("fetches selected IDs instead of presenting an overview as a full response", 
     error: null,
   });
   invoke.mockResolvedValueOnce({ data: saved, error: null });
-  render(<StaffHistory />);
+  await renderAndSignIn();
   await screen.findByText("1152");
   invoke.mockResolvedValueOnce({
     data: {
@@ -151,7 +260,7 @@ it("fetches selected IDs instead of presenting an overview as a full response", 
 
 it("shows history errors and permits retry", async () => {
   invoke.mockRejectedValueOnce(new Error("Offline"));
-  render(<StaffHistory />);
+  await renderAndSignIn();
   expect(await screen.findByRole("alert")).toHaveTextContent(
     "Could not load history: Offline",
   );
@@ -174,7 +283,7 @@ it("shows saved-response failures while retaining overview and download log", as
     error: null,
   });
   invoke.mockRejectedValueOnce(new Error("request not found"));
-  render(<StaffHistory />);
+  await renderAndSignIn();
   expect(await screen.findByRole("alert")).toHaveTextContent(
     "Could not load saved result: request not found",
   );
@@ -197,7 +306,7 @@ it("queue shows held requests with count badge and review form", async () => {
     error: null,
   });
   invoke.mockResolvedValue({ data: saved, error: null });
-  render(<StaffHistory />);
+  await renderAndSignIn();
   // Count badge
   expect(
     await screen.findByLabelText("1 awaiting review"),
@@ -213,7 +322,7 @@ it("queue shows held requests with count badge and review form", async () => {
   ).toBeInTheDocument();
 });
 
-it("review buttons are disabled while reason or staff name is empty", async () => {
+it("review button disabled while reason is empty; enabled when reason filled", async () => {
   invoke.mockResolvedValueOnce({
     data: {
       requests: [heldRow],
@@ -223,24 +332,20 @@ it("review buttons are disabled while reason or staff name is empty", async () =
     error: null,
   });
   invoke.mockResolvedValue({ data: saved, error: null });
-  render(<StaffHistory />);
+  await renderAndSignIn();
   const approveBtn = await screen.findByRole("button", { name: "Approve" });
-  // Neither reason nor name filled → disabled
+  // No reason → disabled
   expect(approveBtn).toBeDisabled();
-  // Fill reason only → still disabled
+  // Fill reason → enabled (no staff-name field needed)
   const textarea = screen.getByPlaceholderText(/Explain the basis/i);
   fireEvent.change(textarea, { target: { value: "Valid reason" } });
-  expect(approveBtn).toBeDisabled();
-  // Fill name too → enabled
-  const nameInput = screen.getByPlaceholderText(/Your name/i);
-  fireEvent.change(nameInput, { target: { value: "Reviewer" } });
   expect(approveBtn).not.toBeDisabled();
   // Clear reason → disabled again
   fireEvent.change(textarea, { target: { value: "" } });
   expect(approveBtn).toBeDisabled();
 });
 
-it("approve calls the review endpoint with the correct body and refreshes on success", async () => {
+it("approve calls the review endpoint WITHOUT staff_name in body and refreshes on success", async () => {
   const refreshedHistory = {
     requests: [{ ...heldRow, status: "decided", needs_review: false }],
     downloads: [],
@@ -250,7 +355,7 @@ it("approve calls the review endpoint with the correct body and refreshes on suc
         action: "approve",
         decision: "APPROVE_STATISTICAL",
         reason: "Purpose is valid.",
-        staff_name: "Reviewer A",
+        staff_name: "staff@example.com",
         created_at: "2026-10-30T09:00:00Z",
       },
     ],
@@ -260,13 +365,10 @@ it("approve calls the review endpoint with the correct body and refreshes on suc
     error: null,
   });
   invoke.mockResolvedValue({ data: saved, error: null });
-  render(<StaffHistory />);
+  await renderAndSignIn();
   await screen.findByRole("button", { name: "Approve" });
   fireEvent.change(screen.getByPlaceholderText(/Explain the basis/i), {
     target: { value: "Purpose is valid." },
-  });
-  fireEvent.change(screen.getByPlaceholderText(/Your name/i), {
-    target: { value: "Reviewer A" },
   });
   // Set up mock: review call succeeds, then refresh returns updated history
   invoke.mockResolvedValueOnce({ data: { ...saved, request_id: "R01" }, error: null });
@@ -275,11 +377,12 @@ it("approve calls the review endpoint with the correct body and refreshes on suc
   fireEvent.click(screen.getByRole("button", { name: "Approve" }));
   await waitFor(() =>
     expect(invoke).toHaveBeenCalledWith("requests/review", {
-      headers: { "x-hdab": "at" }, body: {
+      headers: { "x-hdab": "at" },
+      body: {
         action: "approve",
         request_id: "R01",
         reason: "Purpose is valid.",
-        staff_name: "Reviewer A",
+        // No staff_name — the backend reads it from the Auth token
       },
     }),
   );
@@ -291,13 +394,10 @@ it("shows 409 error clearly on approve of already-decided request", async () => 
     error: null,
   });
   invoke.mockResolvedValue({ data: saved, error: null });
-  render(<StaffHistory />);
+  await renderAndSignIn();
   await screen.findByRole("button", { name: "Approve" });
   fireEvent.change(screen.getByPlaceholderText(/Explain the basis/i), {
     target: { value: "Already decided" },
-  });
-  fireEvent.change(screen.getByPlaceholderText(/Your name/i), {
-    target: { value: "Reviewer B" },
   });
   // Mock: review call returns 409
   invoke.mockResolvedValueOnce({
@@ -324,7 +424,7 @@ it("audit log renders staff actions with who, what, when columns", async () => {
     action: "override",
     decision: "REJECT",
     reason: "Prohibited purpose.",
-    staff_name: "Dr. Smith",
+    staff_name: "staff@example.com",
     created_at: "2026-10-30T08:00:00Z",
   };
   invoke.mockResolvedValueOnce({
@@ -336,11 +436,10 @@ it("audit log renders staff actions with who, what, when columns", async () => {
     error: null,
   });
   invoke.mockResolvedValue({ data: saved, error: null });
-  render(<StaffHistory />);
+  await renderAndSignIn();
   const auditTable = await screen.findByRole("table", { name: "Staff audit log" });
-  expect(within(auditTable).getByText("Dr. Smith")).toBeInTheDocument();
+  expect(within(auditTable).getByText("staff@example.com")).toBeInTheDocument();
   expect(within(auditTable).getByText("override")).toBeInTheDocument();
   expect(within(auditTable).getByText("Prohibited purpose.")).toBeInTheDocument();
-  // Date is localised via toLocaleString, just check the table cell exists for the date
   expect(within(auditTable).getByText("R01")).toBeInTheDocument();
 });

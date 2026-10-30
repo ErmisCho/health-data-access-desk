@@ -14,6 +14,7 @@ import { DataTable } from "./DataTable";
 import { EmptyState, ErrorState } from "./States";
 import { useT, useLang } from "@/lib/i18n";
 import { localizeBackendText } from "@/lib/i18n/translations";
+import { StaffSignIn, StaffSignedInBadge, type StaffSession } from "./StaffSignIn";
 
 const OVERRIDE_DECISIONS: Decision[] = ["REJECT", "APPROVE_STATISTICAL", "APPROVE_SPE"];
 
@@ -28,11 +29,10 @@ function ReviewForm({
   const [action, setAction] = useState<"approve" | "override">("approve");
   const [decision, setDecision] = useState<Decision>("APPROVE_STATISTICAL");
   const [reason, setReason] = useState("");
-  const [staffName, setStaffName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  const canSubmit = reason.trim().length > 0 && staffName.trim().length > 0 && !busy;
+  const canSubmit = reason.trim().length > 0 && !busy;
 
   async function submit() {
     if (!canSubmit) return;
@@ -44,7 +44,6 @@ function ReviewForm({
         request_id: row.request_id,
         ...(action === "override" ? { decision } : {}),
         reason: reason.trim(),
-        staff_name: staffName.trim(),
       });
       onDone();
     } catch (err) {
@@ -112,21 +111,6 @@ function ReviewForm({
           aria-required="true"
         />
       </label>
-      <label className="mt-3 block text-sm">
-        <span>
-          {t("staff.review.staffName")}{" "}
-          <span aria-hidden="true">{t("staff.review.reasonRequired")}</span>
-        </span>
-        <input
-          type="text"
-          value={staffName}
-          onChange={(e) => setStaffName(e.target.value)}
-          placeholder={t("staff.review.staffNamePlaceholder")}
-          maxLength={8000}
-          className="mt-1 block w-full max-w-xs rounded border border-input bg-card px-3 py-2 text-sm"
-          aria-required="true"
-        />
-      </label>
       {error && <ErrorState>{error}</ErrorState>}
       <button
         onClick={submit}
@@ -155,15 +139,17 @@ export function StaffHistory() {
   const t = useT();
   const { lang } = useLang();
   const locale = lang === "de" ? "de-AT" : "en-GB";
+  const [session, setSession] = useState<StaffSession | null>(null);
   const [history, setHistory] = useState<RequestHistory | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [result, setResult] = useState<DecisionResult | null>(null);
   const [error, setError] = useState("");
   const [detailError, setDetailError] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
+    if (!session) return;
     let active = true;
     setLoading(true);
     setError("");
@@ -186,7 +172,7 @@ export function StaffHistory() {
     return () => {
       active = false;
     };
-  }, [refresh]);
+  }, [session, refresh]);
 
   useEffect(() => {
     let active = true;
@@ -214,17 +200,37 @@ export function StaffHistory() {
     setRefresh((n) => n + 1);
   }
 
+  if (!session) {
+    return (
+      <StaffSignIn
+        onSignedIn={(s) => {
+          setSession(s);
+          // useEffect([session, refresh]) fires automatically when session changes.
+        }}
+      />
+    );
+  }
+
   return (
     <section>
       <div className="flex items-center justify-between gap-4">
         <h2 className="font-display text-2xl font-semibold">{t("staff.pastRequests")}</h2>
-        <button
-          disabled={loading}
-          onClick={() => setRefresh((n) => n + 1)}
-          className="rounded border border-input px-3 py-1 text-sm disabled:opacity-50"
-        >
-          {t("staff.refreshHistory")}
-        </button>
+        <div className="flex items-center gap-3">
+          <StaffSignedInBadge
+            session={session}
+            onSignOut={() => {
+              setSession(null);
+              setHistory(null);
+            }}
+          />
+          <button
+            disabled={loading}
+            onClick={() => setRefresh((n) => n + 1)}
+            className="rounded border border-input px-3 py-1 text-sm disabled:opacity-50"
+          >
+            {t("staff.refreshHistory")}
+          </button>
+        </div>
       </div>
 
       {loading && (

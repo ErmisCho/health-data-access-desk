@@ -102,7 +102,8 @@ export interface StaffReviewBody {
   request_id: string;
   decision?: Decision;
   reason: string;
-  staff_name: string;
+  // staff_name is no longer accepted from the client; the backend derives it
+  // from the verified Auth session token.
 }
 
 export function mapEdgeResponse(data: DecisionResult): DecisionResult {

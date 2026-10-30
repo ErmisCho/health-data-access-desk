@@ -411,6 +411,17 @@ export const de: { [K in keyof EnDict]: string } = {
   "register.col.articles": "Artikel",
   "register.ariaPublished": "Veröffentlichte Entscheidungen",
 
+  // ── Staff sign-in ─────────────────────────────────────────────────────────────
+  "staff.signIn.heading": "Personalanmeldung",
+  "staff.signIn.email": "E-Mail",
+  "staff.signIn.password": "Passwort",
+  "staff.signIn.submit": "Anmelden",
+  "staff.signIn.submitting": "Wird angemeldet …",
+  "staff.signIn.error.default": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Zugangsdaten.",
+  "staff.signIn.error.forbidden": "Zugriff verweigert: Ihr Konto hat keine Personalrolle.",
+  "staff.signedIn.badge": "Angemeldet als",
+  "staff.signedIn.signOut": "Abmelden",
+
   // ── StaffHistory ─────────────────────────────────────────────────────────────
   "staff.pastRequests": "Bisherige Anträge",
   "staff.refreshHistory": "Verlauf aktualisieren",
@@ -427,8 +438,6 @@ export const de: { [K in keyof EnDict]: string } = {
   "staff.review.reason": "Begründung",
   "staff.review.reasonRequired": "(erforderlich)",
   "staff.review.reasonPlaceholder": "Erläutern Sie die Grundlage dieser Entscheidung …",
-  "staff.review.staffName": "Name des/der Mitarbeitenden",
-  "staff.review.staffNamePlaceholder": "Ihr Name für das Prüfungsprotokoll",
   "staff.review.submitting": "Wird eingereicht …",
   "staff.review.approveBtn": "Genehmigen",
   "staff.review.overrideBtn": "Überschreiben",

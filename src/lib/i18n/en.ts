@@ -397,6 +397,17 @@ export const en = {
   "register.col.articles": "Articles",
   "register.ariaPublished": "Published decisions",
 
+  // ── Staff sign-in ─────────────────────────────────────────────────────────────
+  "staff.signIn.heading": "Staff sign-in",
+  "staff.signIn.email": "Email",
+  "staff.signIn.password": "Password",
+  "staff.signIn.submit": "Sign in",
+  "staff.signIn.submitting": "Signing in…",
+  "staff.signIn.error.default": "Sign-in failed. Please check your credentials.",
+  "staff.signIn.error.forbidden": "Access denied: your account does not have the staff role.",
+  "staff.signedIn.badge": "Signed in as",
+  "staff.signedIn.signOut": "Sign out",
+
   // ── StaffHistory ─────────────────────────────────────────────────────────────
   "staff.pastRequests": "Past requests",
   "staff.refreshHistory": "Refresh history",
@@ -413,8 +424,6 @@ export const en = {
   "staff.review.reason": "Reason",
   "staff.review.reasonRequired": "(required)",
   "staff.review.reasonPlaceholder": "Explain the basis for this decision…",
-  "staff.review.staffName": "Staff name",
-  "staff.review.staffNamePlaceholder": "Your name for the audit log",
   "staff.review.submitting": "Submitting…",
   "staff.review.approveBtn": "Approve",
   "staff.review.overrideBtn": "Override",
