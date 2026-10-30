@@ -83,8 +83,8 @@ export function HowWeDecide() {
             Opt-out handling
           </h2>
           <p className="mt-4">
-            Patients who opted out are removed before any counting. The eligible population is
-            19,161 of 20,000 synthetic patients. Opt-out counts are never shown.
+            Patients who opted out are removed before any counting. Every count starts from the
+            eligible population (19,161 synthetic patients). Opt-out counts are never shown.
           </p>
         </section>
         <section aria-labelledby="secure-title" className="border-t border-border pt-8">

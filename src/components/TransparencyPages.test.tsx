@@ -101,7 +101,7 @@ it("explains the ordered legal checks and all measured safeguards and test resul
     "fewer than 10 people",
     "suppressed",
     "before any counting",
-    "19,161 of 20,000",
+    "Every count starts from the eligible population (19,161 synthetic patients).",
     "Opt-out counts are never shown",
     "Only the cohort’s pseudonymised records",
     "HTTP 403",
