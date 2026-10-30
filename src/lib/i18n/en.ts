@@ -4,6 +4,21 @@
  */
 export const en = {
   // ── Site header ─────────────────────────────────────────────────────────────
+  "nav.demoService": "Demonstration service · Health Data Access Body",
+  "nav.settings": "Language and access body",
+  "nav.language": "Language",
+  "nav.accessBody": "Access body",
+  "nav.country.at": "Austria",
+  "nav.country.de": "Germany",
+  "nav.loading": "Loading…",
+  "nav.bodyError": "Access bodies could not be loaded. Please reload to try again.",
+  "nav.menu": "Navigation menu",
+  "setup.title": "Choose your access desk",
+  "setup.description": "Choose an access body and your view. You can change these preferences in the header at any time. Staff actions require sign-in.",
+  "setup.continue": "Continue",
+  "setup.close": "Close and keep current preferences",
+  "landing.cta.staff": "Staff sign-in",
+  "landing.cta.demo": "Try the guided demo",
   "nav.home": "EHDS Access Desk",
   "nav.register": "Transparency register",
   "nav.howWeDecide": "How we decide",

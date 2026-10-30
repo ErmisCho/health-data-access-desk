@@ -7,6 +7,7 @@ import { DecisionDetails } from "@/components/DecisionDetails";
 import { DemoPanel } from "@/components/DemoPanel";
 import { GuidedForm } from "@/components/GuidedForm";
 import { EmptyState, ErrorState } from "@/components/States";
+import { usePreferences } from "@/lib/preferences";
 import { useT } from "@/lib/i18n";
 
 export const Route = createFileRoute("/desk")({
@@ -28,36 +29,15 @@ export const Route = createFileRoute("/desk")({
 
 function Desk() {
   const { view } = Route.useSearch();
-  const [role, setRole] = useState<"applicant" | "staff" | "demo">(view ?? "applicant");
+  const { role, setRole } = usePreferences();
   const t = useT();
-  useEffect(() => setRole(view ?? "applicant"), [view]);
+  // Preserve existing demo links; later header changes remain authoritative.
+  useEffect(() => { if (view === "demo") setRole("demo"); }, [view, setRole]);
   useEffect(() => { document.title = t("page.title.desk"); }, [t]);
   return (
     <div className="min-h-screen font-sans">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-6 py-10">
-        <div className="mb-6 flex flex-wrap items-center justify-end gap-4">
-          <div
-            className="flex rounded border border-border p-1"
-            role="group"
-            aria-label={t("desk.roleLabel")}
-          >
-            {(["applicant", "staff", "demo"] as const).map((r) => (
-              <button
-                key={r}
-                aria-pressed={role === r}
-                onClick={() => setRole(r)}
-                className={`rounded px-4 py-1.5 text-sm font-medium capitalize ${role === r ? "bg-primary text-primary-foreground" : "hover:bg-muted"}`}
-              >
-                {r === "applicant"
-                  ? t("desk.role.applicant")
-                  : r === "staff"
-                  ? t("desk.role.staff")
-                  : t("desk.role.demo")}
-              </button>
-            ))}
-          </div>
-        </div>
         <div hidden={role !== "applicant"}>
           <Applicant />
         </div>

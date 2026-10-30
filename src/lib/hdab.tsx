@@ -46,7 +46,6 @@ export function HdabProvider({ children }: { children: ReactNode }) {
     setDefaultLang(selected.display_language);
     const style = document.documentElement.style;
     const properties = {
-      "--primary": selected.branding.primary,
       "--accent": selected.branding.accent,
       "--ring": selected.branding.accent,
     };

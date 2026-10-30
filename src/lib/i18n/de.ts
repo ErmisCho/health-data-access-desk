@@ -9,6 +9,21 @@ import type { EnDict } from "./en";
 /** All keys from EnDict, values are German strings. */
 export const de: { [K in keyof EnDict]: string } = {
   // ── Site header ─────────────────────────────────────────────────────────────
+  "nav.demoService": "Demonstrationsdienst · Gesundheitsdaten-Zugangsstelle",
+  "nav.settings": "Sprache und Zugangsstelle",
+  "nav.language": "Sprache",
+  "nav.accessBody": "Zugangsstelle",
+  "nav.country.at": "Österreich",
+  "nav.country.de": "Deutschland",
+  "nav.loading": "Wird geladen…",
+  "nav.bodyError": "Zugangsstellen konnten nicht geladen werden. Bitte laden Sie die Seite erneut.",
+  "nav.menu": "Navigationsmenü",
+  "setup.title": "Zugangsdesk auswählen",
+  "setup.description": "Wählen Sie eine Zugangsstelle und Ihre Ansicht. Sie können diese Einstellungen jederzeit in der Kopfzeile ändern. Aktionen für Mitarbeitende erfordern eine Anmeldung.",
+  "setup.continue": "Weiter",
+  "setup.close": "Schließen und aktuelle Einstellungen beibehalten",
+  "landing.cta.staff": "Anmeldung für Mitarbeitende",
+  "landing.cta.demo": "Geführte Demo starten",
   "nav.home": "EHDS Access Desk",
   "nav.register": "Transparenzregister",
   "nav.howWeDecide": "Wie wir entscheiden",

@@ -9,10 +9,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { usePreferences } from "@/lib/preferences";
 import { useT } from "@/lib/i18n";
 
 export function LandingPage() {
   const t = useT();
+  const { setRole } = usePreferences();
   useEffect(() => { document.title = t("page.title.home"); }, [t]);
 
   const steps = [
@@ -78,7 +80,7 @@ export function LandingPage() {
                 size="lg"
                 className="min-h-12 bg-accent text-accent-foreground hover:bg-accent/90"
               >
-                <Link to="/desk">
+                <Link to="/desk" onClick={() => setRole("applicant")}>
                   {t("landing.cta.submit")} <ArrowRight aria-hidden="true" />
                 </Link>
               </Button>
@@ -93,6 +95,20 @@ export function LandingPage() {
                 className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-4"
               >
                 {t("landing.cta.howWeDecide")}
+              </Link>
+              <Link
+                to="/desk"
+                onClick={() => setRole("staff")}
+                className="inline-flex min-h-11 items-center text-sm text-primary underline underline-offset-4"
+              >
+                {t("landing.cta.staff")}
+              </Link>
+              <Link
+                to="/desk"
+                onClick={() => setRole("demo")}
+                className="inline-flex min-h-11 items-center text-sm text-primary underline underline-offset-4"
+              >
+                {t("landing.cta.demo")}
               </Link>
             </div>
             <ul aria-label="Safeguards" className="mt-8 flex flex-wrap gap-2">

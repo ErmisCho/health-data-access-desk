@@ -14,6 +14,7 @@ import { EmptyState, ErrorState } from "@/components/States";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { HdabProvider } from "../lib/hdab";
+import { PreferencesProvider } from "../lib/preferences";
 import { LangProvider } from "../lib/i18n";
 
 function NotFoundComponent() {
@@ -129,7 +130,9 @@ function RootComponent() {
       <LangProvider>
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <HdabProvider>
-          <Outlet />
+          <PreferencesProvider>
+            <Outlet />
+          </PreferencesProvider>
         </HdabProvider>
       </LangProvider>
     </QueryClientProvider>

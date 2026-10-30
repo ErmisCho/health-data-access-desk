@@ -6,11 +6,18 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { functions: { invoke: vi.fn() } } }));
 import { supabase } from "@/integrations/supabase/client";
 import { SAMPLE_ENTRIES } from "@/lib/ehds";
 import { Route as DeskRoute } from "@/routes/desk";
+
+import { PreferencesProvider } from "@/lib/preferences";
+
+beforeEach(() => {
+  localStorage.clear();
+  localStorage.setItem("ehds-setup-complete", "true");
+});
 
 afterEach(() => {
   cleanup();
@@ -30,7 +37,7 @@ async function renderDesk(entry: string) {
     history: createMemoryHistory({ initialEntries: [entry] }),
   });
   await router.load();
-  render(<RouterProvider router={router} />);
+  render(<PreferencesProvider><RouterProvider router={router} /></PreferencesProvider>);
   return screen.findByLabelText("View role");
 }
 
@@ -133,5 +140,6 @@ describe("Desk route", () => {
     // Switch to JSON tab again — state is preserved inside JsonEditor
     fireEvent.click(screen.getByRole("button", { name: "JSON", hidden: true }));
     expect(screen.getByLabelText("Request JSON")).toBeVisible();
+    expect(screen.getByLabelText("Request JSON")).toHaveValue('{"purpose":"research"}');
   });
 });

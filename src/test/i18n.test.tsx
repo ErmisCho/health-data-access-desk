@@ -68,6 +68,12 @@ describe("dictionary completeness", () => {
 // ---------------------------------------------------------------------------
 // Helper: render SiteHeader inside a minimal router so <Link> works
 // ---------------------------------------------------------------------------
+function changeLanguage(lang: "de" | "en") {
+  fireEvent.click(screen.getByRole("button", { name: /Language and access body|Sprache und Zugangsstelle/ }));
+  fireEvent.change(screen.getByRole("combobox", { name: /^(Language|Sprache)$/ }), { target: { value: lang } });
+  fireEvent.click(screen.getByRole("button", { name: /Language and access body|Sprache und Zugangsstelle/ }));
+}
+
 function HeaderPage() {
   return <SiteHeader />;
 }
@@ -109,16 +115,14 @@ describe("language toggle", () => {
     expect(within(nav).getByRole("link", { name: "Transparency register" })).toBeInTheDocument();
 
     // Click DE toggle
-    const deBtn = screen.getByRole("button", { name: "Switch to German" });
-    fireEvent.click(deBtn);
+    changeLanguage("de");
 
     // Now German: "Transparenzregister" in nav
     expect(within(nav).getByRole("link", { name: "Transparenzregister" })).toBeInTheDocument();
     expect(within(nav).queryByRole("link", { name: "Transparency register" })).not.toBeInTheDocument();
 
     // Click EN toggle
-    const enBtn = screen.getByRole("button", { name: "Switch to English" });
-    fireEvent.click(enBtn);
+    changeLanguage("en");
     expect(within(nav).getByRole("link", { name: "Transparency register" })).toBeInTheDocument();
   });
 
@@ -142,7 +146,7 @@ describe("language toggle", () => {
     await screen.findByRole("heading", { name: "Can this health-data request be approved?" });
 
     // Switch to German
-    fireEvent.click(screen.getByRole("button", { name: "Switch to German" }));
+    changeLanguage("de");
 
     expect(
       screen.getByRole("heading", {
@@ -160,7 +164,7 @@ describe("sessionStorage persistence", () => {
     await renderHeader();
 
     // Switch to German
-    fireEvent.click(screen.getByRole("button", { name: "Switch to German" }));
+    changeLanguage("de");
 
     // Verify sessionStorage has "de"
     expect(sessionStorage.getItem("ehds-lang")).toBe("de");
@@ -188,9 +192,9 @@ describe("html lang attribute", () => {
   it("sets document.documentElement.lang to de on German toggle", async () => {
     await renderHeader();
     expect(document.documentElement.lang).toBe("en");
-    fireEvent.click(screen.getByRole("button", { name: "Switch to German" }));
+    changeLanguage("de");
     expect(document.documentElement.lang).toBe("de");
-    fireEvent.click(screen.getByRole("button", { name: "Switch to English" }));
+    changeLanguage("en");
     expect(document.documentElement.lang).toBe("en");
   });
 });

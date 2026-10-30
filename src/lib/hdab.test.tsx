@@ -64,6 +64,7 @@ function mount() {
   );
 }
 beforeEach(() => {
+  localStorage.clear();
   sessionStorage.clear();
   saveHdab("at");
   invoke.mockReset();
@@ -71,6 +72,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  localStorage.clear();
   sessionStorage.clear();
   saveHdab("at");
 });
