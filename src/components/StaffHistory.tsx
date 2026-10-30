@@ -213,7 +213,6 @@ export function StaffHistory() {
 
   return (
     <section>
-      <h1 className="sr-only">{t("desk.heading")}</h1>
       <div className="flex items-center justify-between gap-4">
         <h2 className="font-display text-2xl font-semibold">{t("staff.pastRequests")}</h2>
         <div className="flex items-center gap-3">

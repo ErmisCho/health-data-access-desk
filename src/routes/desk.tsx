@@ -43,6 +43,7 @@ function Desk() {
     <div className="min-h-screen font-sans">
       <SiteHeader />
       <main id="main-content" className="mx-auto max-w-6xl px-6 py-10">
+        <h1 className="sr-only">{t("desk.heading")}</h1>
         <div hidden={role !== "applicant"}>
           <Applicant />
         </div>
@@ -82,7 +83,7 @@ function Applicant() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-semibold">{t("desk.applicant.heading")}</h1>
+        <h2 className="font-display text-2xl font-semibold">{t("desk.applicant.heading")}</h2>
         <div
           className="flex rounded border border-border p-1"
           aria-label={t("desk.inputMode")}

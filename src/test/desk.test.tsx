@@ -142,4 +142,13 @@ describe("Desk route", () => {
     expect(screen.getByLabelText("Request JSON")).toBeVisible();
     expect(screen.getByLabelText("Request JSON")).toHaveValue('{"purpose":"research"}');
   });
+
+  it.each(["applicant", "staff", "demo"] as const)(
+    "has exactly one h1 on /desk with role=%s",
+    async (role) => {
+      localStorage.setItem("ehds-role", role);
+      await renderDesk("/desk");
+      expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    },
+  );
 });

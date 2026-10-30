@@ -137,3 +137,21 @@ it("table region is keyboard-reachable and has an accessible caption", async () 
   const region = screen.getByRole("region", { name: "Published decisions" });
   expect(region).toHaveAttribute("tabindex", "0");
 });
+
+it("register table scrollable container has overflow-x:auto and max-width:100%", async () => {
+  invoke.mockResolvedValue({
+    data: {
+      entries: [
+        { ...entry, reference: "HDAB-X2", articles: ["53"] },
+      ],
+    },
+    error: null,
+  });
+  render(<TransparencyRegister />);
+  await screen.findByText("HDAB-X2");
+  const region = screen.getByRole("region", { name: "Published decisions" });
+  const style = window.getComputedStyle(region);
+  // jsdom may not compute Tailwind classes, so check the className directly
+  expect(region.className).toMatch(/overflow-x-auto/);
+  expect(region.className).toMatch(/max-w-full/);
+});

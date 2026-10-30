@@ -105,9 +105,9 @@ export function TransparencyRegister() {
                 role="region"
                 aria-label={t("register.ariaPublished")}
                 tabIndex={0}
-                className="overflow-x-auto rounded border border-border focus-visible:outline-2 focus-visible:outline-ring"
+                className="max-w-full overflow-x-auto rounded border border-border focus-visible:outline-2 focus-visible:outline-ring"
               >
-                <table className="w-full min-w-[760px] text-left text-sm">
+                <table className="w-full min-w-[600px] text-left text-sm">
                   <caption className="sr-only">{t("register.caption")}</caption>
                   <thead className="bg-muted">
                     <tr>
@@ -128,7 +128,7 @@ export function TransparencyRegister() {
                   <tbody className="bg-card">
                     {visible.map((entry) => (
                       <tr key={entry.reference} className="border-t border-border">
-                        <th scope="row" className="px-4 py-4 font-mono font-medium">
+                        <th scope="row" className="break-all px-4 py-4 font-mono font-medium">
                           {entry.reference}
                         </th>
                         <td className="whitespace-nowrap px-4 py-4">
