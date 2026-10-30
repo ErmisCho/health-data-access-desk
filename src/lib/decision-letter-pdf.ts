@@ -95,6 +95,8 @@ export function buildDecisionLetterPdf(
   paragraph(`${t("pdf.label.date")}${letter.date}`);
   heading("Decision letter");
   heading(t("pdf.heading.verdict"));
+  paragraph(letter.headline, true);
+  paragraph(letter.nextSteps);
   paragraph(letter.verdict);
   paragraph(letter.decision, true);
   heading(t("pdf.heading.why"));

@@ -188,6 +188,20 @@ export const de: { [K in keyof EnDict]: string } = {
   "form.runSample": "Beispielantrag ausführen",
 
   // ── DecisionDetails ──────────────────────────────────────────────────────────
+  // Plain headlines (decision + needs_review matrix)
+  "decision.headline.APPROVE_STATISTICAL": "Ja — genehmigt für anonymisierte Statistiken",
+  "decision.headline.APPROVE_SPE": "Ja — genehmigt für die Arbeit in einer sicheren Verarbeitungsumgebung",
+  "decision.headline.REJECT": "Nein — dieser Antrag kann nicht genehmigt werden",
+  "decision.headline.held": "Eine Person wird diesen Antrag prüfen",
+  // Short "what happens next" lines
+  "decision.next.APPROVE_STATISTICAL":
+    "Die anonymisierten Ergebnisse sind unten dargestellt; Gruppen mit weniger als 10 Einträgen werden zum Schutz der Privatsphäre ausgeblendet.",
+  "decision.next.APPROVE_SPE":
+    "Sie arbeiten mit den Daten innerhalb der sicheren Verarbeitungsumgebung; Downloads sind gesperrt und werden protokolliert.",
+  "decision.next.REJECT":
+    "Um eine Überprüfung zu beantragen, wählen Sie einen zulässigen Zweck gemäß Artikel 53 und reichen Sie einen neuen Antrag ein.",
+  "decision.next.held":
+    "Mitarbeitende der Zugangsstelle entscheiden vor der gesetzlichen Frist{deadline}.",
   "decision.viewLetter": "Bescheid anzeigen",
   "decision.needsReview": "Mitarbeiterprüfung erforderlich",
   "decision.citedArticles": "Zitierte Artikel",

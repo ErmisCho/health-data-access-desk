@@ -65,6 +65,8 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
           <h2 id="letter-verdict" className="text-xl font-semibold">
             {t("letter.verdict.title")}
           </h2>
+          <p className="text-2xl font-bold leading-tight">{letter.headline}</p>
+          <p className="text-sm text-muted-foreground">{letter.nextSteps}</p>
           <p>{letter.verdict}</p>
           <DecisionBadge decision={letter.decision} />
           <LifecycleStepper

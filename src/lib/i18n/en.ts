@@ -198,6 +198,20 @@ export const en = {
   "form.runSample": "Run sample request",
 
   // ── DecisionDetails ──────────────────────────────────────────────────────────
+  // Plain headlines (decision + needs_review matrix)
+  "decision.headline.APPROVE_STATISTICAL": "Yes — approved for anonymised statistics",
+  "decision.headline.APPROVE_SPE": "Yes — approved for work in a secure processing environment",
+  "decision.headline.REJECT": "No — this request cannot be approved",
+  "decision.headline.held": "A person will review this request",
+  // Short "what happens next" lines
+  "decision.next.APPROVE_STATISTICAL":
+    "The anonymised results are shown below; groups smaller than 10 are hidden to protect privacy.",
+  "decision.next.APPROVE_SPE":
+    "You work with the data inside the secure environment; downloads are blocked and logged.",
+  "decision.next.REJECT":
+    "To request a reconsideration, choose a permitted purpose under Article 53 and submit a new request.",
+  "decision.next.held":
+    "Staff at the access body decide before the legal deadline{deadline}.",
   "decision.viewLetter": "View decision letter",
   "decision.needsReview": "Needs staff review",
   "decision.citedArticles": "Cited articles",

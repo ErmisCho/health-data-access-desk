@@ -10,6 +10,7 @@ import { afterEach, expect, it, vi } from "vitest";
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { functions: { invoke: vi.fn() } } }));
 import { supabase } from "@/integrations/supabase/client";
 import { SAMPLE_ENTRIES, type Decision, type DecisionResult } from "@/lib/ehds";
+import { en } from "@/lib/i18n/en";
 import { ExamplesGallery } from "./ExamplesGallery";
 import { HowWeDecide } from "./HowWeDecide";
 
@@ -128,12 +129,18 @@ it("shows ten original questions, applicant types, expected badges and reasons w
     "listitem",
   );
   expect(cards).toHaveLength(10);
+  const badgeLabel: Record<Decision, string> = {
+    APPROVE_STATISTICAL: en["badge.APPROVE_STATISTICAL"],
+    APPROVE_SPE: en["badge.APPROVE_SPE"],
+    REJECT: en["badge.REJECT"],
+  };
   SAMPLE_ENTRIES.forEach((sample, index) => {
     const card = cards[index]!;
     expect(card).toHaveTextContent(sample.id);
     expect(card).toHaveTextContent(sample.request.question);
     expect(card).toHaveTextContent(sample.request.requested_as);
-    expect(within(card).getByText(decisions[index]!)).toBeVisible();
+    // badge now shows plain label; raw code is in aria-hidden secondary text
+    expect(within(card).getByText(badgeLabel[decisions[index]!])).toBeVisible();
     expect(within(card).getByRole("button", { name: `Open ${sample.label}` })).toHaveAttribute(
       "aria-expanded",
       "false",

@@ -9,6 +9,7 @@ import { ErrorState } from "./States";
 import { Button } from "./ui/button";
 import { useLang, useT } from "@/lib/i18n";
 import { localizeBackendText } from "@/lib/i18n/translations";
+import { plainOutcome } from "@/lib/decision-letter";
 
 export function DecisionDetails({
   result,
@@ -37,8 +38,18 @@ export function DecisionDetails({
       onDownloadAttempt?.();
     }
   }
+
+  const { headline, nextSteps } = plainOutcome(result, t, lang === "de" ? "de-AT" : "en-GB");
+
   return (
     <div className="mt-4 space-y-4">
+      {/* Plain headline — most prominent element */}
+      <h3 className="text-2xl font-bold leading-tight">{headline}</h3>
+      {/* One-sentence reason */}
+      <p className="text-base">{localizeBackendText(result.reason, lang)}</p>
+      {/* What happens next */}
+      <p className="text-sm text-muted-foreground">{nextSteps}</p>
+
       <DecisionBadge decision={result.decision} />
       <div>
         <Button asChild variant="outline">
@@ -71,12 +82,6 @@ export function DecisionDetails({
             </span>
           ))}
         </div>
-      </div>
-      <div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
-          {t("decision.reason")}
-        </p>
-        <p className="mt-1">{localizeBackendText(result.reason, lang)}</p>
       </div>
       {result.explanation && (
         <ExplanationPanel

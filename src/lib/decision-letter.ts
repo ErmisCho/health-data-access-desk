@@ -30,10 +30,35 @@ const EN_STRINGS: Partial<Record<TranslationKey, string>> = {
   "letter.conditions.stats":
     "Use only for the stated purpose. Small cells are suppressed to protect privacy.",
   "letter.issuer": "Health Data Access Body (HDAB)",
+  "decision.headline.APPROVE_STATISTICAL": "Yes — approved for anonymised statistics",
+  "decision.headline.APPROVE_SPE": "Yes — approved for work in a secure processing environment",
+  "decision.headline.REJECT": "No — this request cannot be approved",
+  "decision.headline.held": "A person will review this request",
+  "decision.next.APPROVE_STATISTICAL":
+    "The anonymised results are shown below; groups smaller than 10 are hidden to protect privacy.",
+  "decision.next.APPROVE_SPE":
+    "You work with the data inside the secure environment; downloads are blocked and logged.",
+  "decision.next.REJECT":
+    "To request a reconsideration, choose a permitted purpose under Article 53 and submit a new request.",
+  "decision.next.held":
+    "Staff at the access body decide before the legal deadline{deadline}.",
 };
 
 function makeDefaultT(): TFn {
   return (key) => EN_STRINGS[key] ?? key;
+}
+
+// Plain-language headline and next step for an outcome; shared by the result view and the letter.
+export function plainOutcome(result: DecisionResult, t: TFn, locale = "en-GB") {
+  const held = !!result.needs_review || result.status === "staff_review";
+  const outcome = held ? "held" : result.decision;
+  const due = held && result.deadline?.due
+    ? ` (${new Date(result.deadline.due).toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" })})`
+    : "";
+  return {
+    headline: t(`decision.headline.${outcome}` as TranslationKey),
+    nextSteps: t(`decision.next.${outcome}` as TranslationKey).replace("{deadline}", due),
+  };
 }
 
 // Explicit projection: never pass the backend response or SPE records to the PDF builder.
@@ -44,6 +69,9 @@ export function createDecisionLetter(
   locale = "en-GB",
 ) {
   const held = !!result.needs_review || result.status === "staff_review";
+
+  const { headline, nextSteps } = plainOutcome(result, t, locale);
+
   const rows = result.decision === "APPROVE_STATISTICAL" ? answerRows(result.answer) : [];
   const columns = answerColumns(rows, true);
   const depth = Math.max(0, ...rows.map((row) => row.groups.length));
@@ -79,6 +107,8 @@ export function createDecisionLetter(
   ];
 
   return {
+    headline,
+    nextSteps,
     issuer: t("letter.issuer"),
     reference: result.request_id,
     date: date.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }),

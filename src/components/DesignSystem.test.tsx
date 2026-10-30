@@ -11,12 +11,17 @@ afterEach(cleanup);
 
 describe("institutional design system", () => {
   it.each([
-    ["REJECT", "destructive"],
-    ["APPROVE_STATISTICAL", "success"],
-    ["APPROVE_SPE", "info"],
-  ] as const)("uses semantic colours and a text label for %s", (decision, token) => {
+    ["REJECT", "Rejected", "destructive"],
+    ["APPROVE_STATISTICAL", "Approved for statistics", "success"],
+    ["APPROVE_SPE", "Approved for secure processing", "info"],
+  ] as const)("uses semantic colours and a plain label for %s", (decision, label, token) => {
     render(<DecisionBadge decision={decision} />);
-    expect(screen.getByText(decision)).toHaveClass(`bg-${token}`, `text-${token}-foreground`);
+    // The outer badge span carries the colour classes and aria-label
+    const badge = screen.getByLabelText(label);
+    expect(badge).toHaveClass(`bg-${token}`, `text-${token}-foreground`);
+    // The raw code is still present but only for secondary display (aria-hidden)
+    const codeSpan = badge.querySelector(`[aria-hidden="true"]`);
+    expect(codeSpan?.textContent).toContain(decision);
   });
 
   it.each(["<10", "suppressed"])("hatches %s and explains it on keyboard focus", async (value) => {

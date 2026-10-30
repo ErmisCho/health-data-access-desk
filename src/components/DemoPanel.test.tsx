@@ -139,8 +139,10 @@ it.each(cases)(
       fireEvent.click(button);
       const callout = await screen.findByRole("complementary", { name: "What to point at" });
       for (const fact of facts) expect(callout).toHaveTextContent(fact);
-      const live = within(screen.getByRole("region", { name: "Live demo result" }));
-      expect(live.getByText(result.decision)).toBeInTheDocument();
+      const liveEl = screen.getByRole("region", { name: "Live demo result" });
+      const live = within(liveEl);
+      // badge now shows plain label with raw code in parentheses (aria-hidden)
+      expect(liveEl.textContent).toContain(result.decision);
       for (const article of result.articles)
         expect(live.getByText(`Art. ${article}`)).toBeInTheDocument();
       expect(invoke).toHaveBeenCalledWith("requests", {

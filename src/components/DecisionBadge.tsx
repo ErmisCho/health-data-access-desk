@@ -7,22 +7,24 @@ const decisionStyle: Record<Decision, string> = {
   APPROVE_SPE: "bg-info text-info-foreground",
 };
 
+const badgeKey = (d: Decision) =>
+  d === "REJECT"
+    ? "badge.REJECT"
+    : d === "APPROVE_STATISTICAL"
+      ? "badge.APPROVE_STATISTICAL"
+      : ("badge.APPROVE_SPE" as const);
+
 export function DecisionBadge({ decision }: { decision: Decision }) {
   const t = useT();
+  const label = t(badgeKey(decision));
   return (
     <span
-      className={`inline-block max-w-full break-words rounded px-2 py-1 font-mono text-xs font-medium ${decisionStyle[decision]}`}
+      aria-label={label}
+      className={`inline-flex max-w-full items-baseline gap-1.5 break-words rounded px-2 py-1 font-mono text-xs font-medium ${decisionStyle[decision]}`}
     >
-      {decision}
-      <span className="sr-only">
-        {" "}
-        ({t(
-          decision === "REJECT"
-            ? "badge.REJECT"
-            : decision === "APPROVE_STATISTICAL"
-            ? "badge.APPROVE_STATISTICAL"
-            : "badge.APPROVE_SPE",
-        )})
+      <span>{label}</span>
+      <span aria-hidden="true" className="opacity-60">
+        ({decision})
       </span>
     </span>
   );

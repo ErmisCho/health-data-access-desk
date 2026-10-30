@@ -65,7 +65,7 @@ it("rejections show the decision and reason without results", () => {
       }}
     />,
   );
-  expect(screen.getByText("REJECT")).toBeInTheDocument();
+  expect(screen.getByText("No — this request cannot be approved")).toBeInTheDocument();
   expect(screen.getByText("Prohibited")).toBeInTheDocument();
   expect(screen.queryByRole("table")).not.toBeInTheDocument();
   expect(screen.queryByText(/Cohort size/)).not.toBeInTheDocument();

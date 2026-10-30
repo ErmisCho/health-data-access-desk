@@ -233,3 +233,71 @@ describe("Memo in decision letter (Issue #35)", () => {
     expect(letter.memo).toBeUndefined();
   });
 });
+
+describe("Plain decision headlines", () => {
+  it.each([
+    {
+      result: base,
+      expectedHeadline: "No — this request cannot be approved",
+      expectedNext: /choose a permitted purpose under Article 53/,
+    },
+    {
+      result: statistics,
+      expectedHeadline: "Yes — approved for anonymised statistics",
+      expectedNext: /groups smaller than 10 are hidden/,
+    },
+    {
+      result: spe,
+      expectedHeadline: "Yes — approved for work in a secure processing environment",
+      expectedNext: /downloads are blocked and logged/,
+    },
+    {
+      result: { ...spe, needs_review: true },
+      expectedHeadline: "A person will review this request",
+      expectedNext: /decide before the legal deadline/,
+    },
+  ] as const)(
+    "DecisionDetails leads with correct headline for $result.request_id",
+    ({ result, expectedHeadline, expectedNext }) => {
+      render(<DecisionDetails result={result as DecisionResult} />);
+      expect(screen.getByRole("heading", { level: 3, name: expectedHeadline })).toBeInTheDocument();
+      expect(screen.getByText(expectedNext)).toBeInTheDocument();
+    },
+  );
+
+  it.each([
+    { result: base, expectedHeadline: "No — this request cannot be approved" },
+    { result: statistics, expectedHeadline: "Yes — approved for anonymised statistics" },
+    { result: spe, expectedHeadline: "Yes — approved for work in a secure processing environment" },
+    {
+      result: { ...spe, needs_review: true },
+      expectedHeadline: "A person will review this request",
+    },
+  ] as const)(
+    "DecisionLetter verdict section leads with correct headline for $result.request_id",
+    ({ result, expectedHeadline }) => {
+      const letter = createDecisionLetter(result as DecisionResult, date);
+      render(<DecisionLetter letter={letter} />);
+      expect(screen.getByText(expectedHeadline)).toBeInTheDocument();
+    },
+  );
+
+  it("createDecisionLetter exposes headline and nextSteps fields", () => {
+    expect(createDecisionLetter(base, date).headline).toBe("No — this request cannot be approved");
+    expect(createDecisionLetter(statistics, date).headline).toBe(
+      "Yes — approved for anonymised statistics",
+    );
+    expect(createDecisionLetter(spe, date).headline).toBe(
+      "Yes — approved for work in a secure processing environment",
+    );
+    expect(createDecisionLetter({ ...spe, needs_review: true }, date).headline).toBe(
+      "A person will review this request",
+    );
+    expect(createDecisionLetter(base, date).nextSteps).toMatch(
+      /choose a permitted purpose under Article 53/,
+    );
+    expect(createDecisionLetter({ ...spe, needs_review: true }, date).nextSteps).toMatch(
+      /decide before the legal deadline/,
+    );
+  });
+});
