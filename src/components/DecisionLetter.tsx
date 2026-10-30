@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { DecisionLetter as Letter } from "@/lib/decision-letter";
 import { DecisionBadge } from "./DecisionBadge";
+import { LifecycleStepper } from "./LifecycleStepper";
 import { LegalQuote } from "./LegalQuote";
 import { DataTable } from "./DataTable";
 import { Button } from "./ui/button";
@@ -61,6 +62,10 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
           </h2>
           <p>{letter.verdict}</p>
           <DecisionBadge decision={letter.decision} />
+          <LifecycleStepper
+            needsReview={letter.needs_review}
+            timeline={letter.timeline}
+          />
         </section>
         <section aria-labelledby="letter-why" className="space-y-3">
           <h2 id="letter-why" className="text-xl font-semibold">

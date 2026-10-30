@@ -38,6 +38,11 @@ export interface DecisionExplanation {
   articles: LegalArticle[];
   plan_summary?: string;
 }
+export interface TimelineEvent {
+  status: "submitted" | "assessed" | "staff_review" | "decided" | "fulfilled";
+  at: string;
+}
+
 export interface DecisionResult {
   request_id: string;
   decision: Decision;
@@ -50,6 +55,7 @@ export interface DecisionResult {
   parse_errors?: { definition: string; reason: string }[];
   explanation?: DecisionExplanation;
   population?: { eligible_patients: number };
+  timeline?: TimelineEvent[];
 }
 export interface StaffAction {
   request_id: string;

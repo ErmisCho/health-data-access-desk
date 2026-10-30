@@ -1,4 +1,4 @@
-import type { Decision, DecisionResult } from "./ehds";
+import type { Decision, DecisionResult, TimelineEvent } from "./ehds";
 import { answerColumns, answerRows, isPercentage, metricLabel, formatValue } from "./answers";
 
 const verdicts: Record<Decision, string> = {
@@ -20,6 +20,9 @@ export function createDecisionLetter(result: DecisionResult, date = new Date()) 
     date: date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }),
     decision: result.decision,
     verdict: held ? "Awaiting staff review — decision held" : verdicts[result.decision],
+    timeline: result.timeline as TimelineEvent[] | undefined,
+    needs_review: held,
+    status: result.status,
     rule: result.explanation?.rule || result.reason,
     triggers: [...(result.explanation?.trigger_phrases ?? [])],
     articles: (result.explanation?.articles ?? []).map((article) => ({
