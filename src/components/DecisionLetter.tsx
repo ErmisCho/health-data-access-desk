@@ -69,6 +69,7 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
           <LifecycleStepper
             needsReview={letter.needs_review}
             timeline={letter.timeline}
+            deadline={letter.deadline}
           />
         </section>
         <section aria-labelledby="letter-why" className="space-y-3">

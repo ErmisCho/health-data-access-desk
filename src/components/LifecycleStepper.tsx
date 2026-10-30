@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
-import type { TimelineEvent } from "@/lib/ehds";
+import type { TimelineEvent, DecisionDeadline } from "@/lib/ehds";
 import { useT, useLang } from "@/lib/i18n";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const steps = ["Submitted", "Assessed", "Staff review", "Decided", "Fulfilled"] as const;
 export type LifecycleStep = (typeof steps)[number];
@@ -69,11 +70,13 @@ export function LifecycleStepper({
   needsReview = false,
   timestamps = {},
   timeline,
+  deadline,
 }: {
   current?: LifecycleStep;
   needsReview?: boolean;
   timestamps?: Partial<Record<LifecycleStep, string>>;
   timeline?: TimelineEvent[];
+  deadline?: DecisionDeadline | null;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -114,36 +117,91 @@ export function LifecycleStepper({
   const currentIndex = visibleSteps.indexOf(current);
   const isLastStep = currentIndex === visibleSteps.length - 1;
 
+  // Deadline display
+  const now = new Date();
+  const deadlineDate = deadline?.due ? new Date(deadline.due) : null;
+  const isDecided = terminal;
+
+  // Days remaining (for held/in-progress requests)
+  let daysLeft: number | null = null;
+  if (deadlineDate && !isDecided) {
+    daysLeft = Math.ceil((deadlineDate.getTime() - now.getTime()) / 86_400_000);
+  }
+
+  // Locale-formatted due date
+  const dueDateFormatted = deadlineDate
+    ? deadlineDate.toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" })
+    : null;
+
+  // Decided-on date (first "decided" event)
+  const decidedAt = timeline?.find((e) => e.status === "decided")?.at ?? null;
+  const decidedFormatted = decidedAt
+    ? new Date(decidedAt).toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" })
+    : null;
+
+  // Was the decision made on time?
+  const onTime =
+    isDecided && deadlineDate && decidedAt
+      ? new Date(decidedAt) <= deadlineDate
+      : null;
+
   return (
-    <ol aria-label={t("lifecycle.aria")} className="grid grid-cols-2 gap-3 sm:auto-cols-fr sm:grid-flow-col sm:grid-cols-none">
-      {visibleSteps.map((step, index) => (
-        <li
-          key={step}
-          aria-current={step === current ? "step" : undefined}
-          className={cn(
-            "min-w-0 border-t-4 border-border pt-2 text-sm",
-            index <= currentIndex && "border-accent",
-          )}
-        >
-          <span className={cn("block", step === current && !terminal && "font-semibold")}>
-            {stepLabel[step]}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            {index < currentIndex
-              ? t("lifecycle.status.complete")
-              : step === current
-              ? terminal && isLastStep
+    <div className="space-y-3">
+      <ol aria-label={t("lifecycle.aria")} className="grid grid-cols-2 gap-3 sm:auto-cols-fr sm:grid-flow-col sm:grid-cols-none">
+        {visibleSteps.map((step, index) => (
+          <li
+            key={step}
+            aria-current={step === current ? "step" : undefined}
+            className={cn(
+              "min-w-0 border-t-4 border-border pt-2 text-sm",
+              index <= currentIndex && "border-accent",
+            )}
+          >
+            <span className={cn("block", step === current && !terminal && "font-semibold")}>
+              {stepLabel[step]}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {index < currentIndex
                 ? t("lifecycle.status.complete")
-                : t("lifecycle.status.current")
-              : t("lifecycle.status.pending")}
-          </span>
-          {effectiveTimestamps[step] && (
-            <time className="mt-1 block break-words font-mono text-xs" dateTime={effectiveTimestamps[step]}>
-              {effectiveTimestamps[step]}
-            </time>
-          )}
-        </li>
-      ))}
-    </ol>
+                : step === current
+                ? terminal && isLastStep
+                  ? t("lifecycle.status.complete")
+                  : t("lifecycle.status.current")
+                : t("lifecycle.status.pending")}
+            </span>
+            {effectiveTimestamps[step] && (
+              <time className="mt-1 block break-words font-mono text-xs" dateTime={effectiveTimestamps[step]}>
+                {effectiveTimestamps[step]}
+              </time>
+            )}
+          </li>
+        ))}
+      </ol>
+      {deadline && dueDateFormatted && (
+        <div className="rounded border border-border bg-muted/50 px-3 py-2 text-sm" data-testid="deadline-banner">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="cursor-help underline decoration-dotted">
+                  {isDecided
+                    ? decidedFormatted && onTime !== null
+                      ? onTime
+                        ? t("lifecycle.deadline.decidedOnTime").replace("{date}", decidedFormatted)
+                        : t("lifecycle.deadline.decidedLate").replace("{date}", decidedFormatted)
+                      : t("lifecycle.deadline.due").replace("{date}", dueDateFormatted).replace("{ref}", deadline.basis_ref)
+                    : daysLeft !== null && daysLeft >= 0
+                    ? t("lifecycle.deadline.daysLeft").replace("{n}", String(daysLeft)).replace("{date}", dueDateFormatted).replace("{ref}", deadline.basis_ref)
+                    : t("lifecycle.deadline.overdue").replace("{date}", dueDateFormatted).replace("{ref}", deadline.basis_ref)}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-sm text-xs">
+                <p className="mb-1 font-semibold">{deadline.basis_ref}</p>
+                <p className="italic">&ldquo;{deadline.basis_quote}&rdquo;</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      )}
+    </div>
   );
 }

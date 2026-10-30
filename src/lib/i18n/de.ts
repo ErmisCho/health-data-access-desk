@@ -204,6 +204,11 @@ export const de: { [K in keyof EnDict]: string } = {
   "lifecycle.status.current": "Aktuell",
   "lifecycle.status.pending": "Ausstehend",
   "lifecycle.aria": "Antragsverlauf",
+  "lifecycle.deadline.due": "Entscheidung fällig bis {date} ({ref})",
+  "lifecycle.deadline.daysLeft": "{n} Tage verbleibend · fällig {date} ({ref})",
+  "lifecycle.deadline.overdue": "Frist abgelaufen {date} ({ref})",
+  "lifecycle.deadline.decidedOnTime": "Entschieden am {date}, innerhalb der Frist",
+  "lifecycle.deadline.decidedLate": "Entschieden am {date}",
 
   // ── ExplanationPanel ─────────────────────────────────────────────────────────
   "explanation.heading": "Entscheidungsbegründung",

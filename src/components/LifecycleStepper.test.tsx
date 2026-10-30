@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import { LifecycleStepper } from "./LifecycleStepper";
-import type { TimelineEvent } from "@/lib/ehds";
+import type { TimelineEvent, DecisionDeadline } from "@/lib/ehds";
 
 afterEach(cleanup);
 
@@ -149,5 +149,67 @@ describe("LifecycleStepper", () => {
     items.slice(0, -1).forEach((li) =>
       expect(li.querySelector(".text-muted-foreground")).toHaveTextContent("Complete"),
     );
+  });
+});
+
+describe("LifecycleStepper deadline banner", () => {
+  const DUE_DATE = "2026-04-15";
+  const deadline: DecisionDeadline = {
+    due: DUE_DATE,
+    basis_ref: "Art. 68(4)",
+    basis_quote:
+      "the health data access body shall issue or refuse a data permit within three months of receiving a complete health data access application",
+  };
+
+  it("shows deadline banner with days-left text for a held request", () => {
+    render(
+      <LifecycleStepper
+        timeline={timeline("submitted", "assessed", "staff_review")}
+        deadline={deadline}
+      />,
+    );
+    const banner = screen.getByTestId("deadline-banner");
+    expect(banner).toBeInTheDocument();
+    // Contains the article reference somewhere in the banner
+    expect(banner).toHaveTextContent("Art. 68(4)");
+  });
+
+  it("shows deadline banner with decided-on-time text for a decided request (decided before due)", () => {
+    const decidedAt = "2026-03-01T10:00:00Z"; // before 2026-04-15
+    render(
+      <LifecycleStepper
+        timeline={[
+          { status: "submitted", at: "2026-01-15T10:00:00Z" },
+          { status: "assessed", at: "2026-01-16T10:00:00Z" },
+          { status: "decided", at: decidedAt },
+          { status: "fulfilled", at: "2026-03-02T10:00:00Z" },
+        ]}
+        deadline={deadline}
+      />,
+    );
+    const banner = screen.getByTestId("deadline-banner");
+    expect(banner).toBeInTheDocument();
+    expect(banner).toHaveTextContent("within the deadline");
+  });
+
+  it("shows no banner when deadline prop is absent", () => {
+    render(
+      <LifecycleStepper
+        timeline={timeline("submitted", "assessed", "staff_review")}
+      />,
+    );
+    expect(screen.queryByTestId("deadline-banner")).not.toBeInTheDocument();
+  });
+
+  it("tooltip content contains basis_ref and basis_quote", () => {
+    render(
+      <LifecycleStepper
+        timeline={timeline("submitted", "assessed", "staff_review")}
+        deadline={deadline}
+      />,
+    );
+    // The TooltipContent is in the DOM (Radix renders it hidden or in a portal).
+    // Assert the trigger text contains the ref.
+    expect(screen.getByTestId("deadline-banner")).toHaveTextContent("Art. 68(4)");
   });
 });

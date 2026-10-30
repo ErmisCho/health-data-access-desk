@@ -1,4 +1,4 @@
-import type { Decision, DecisionResult, TimelineEvent } from "./ehds";
+import type { Decision, DecisionResult, TimelineEvent, DecisionDeadline } from "./ehds";
 import { answerColumns, answerRows, isPercentage, metricLabel, formatValue } from "./answers";
 import type { TranslationKey } from "./i18n";
 
@@ -83,6 +83,7 @@ export function createDecisionLetter(
     decision: result.decision,
     verdict,
     timeline: result.timeline as TimelineEvent[] | undefined,
+    deadline: result.deadline as DecisionDeadline | null | undefined,
     needs_review: held,
     status: result.status,
     rule: result.explanation?.rule || result.reason,

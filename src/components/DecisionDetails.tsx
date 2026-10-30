@@ -50,6 +50,7 @@ export function DecisionDetails({
       <LifecycleStepper
         needsReview={!!result.needs_review}
         timeline={result.timeline}
+        deadline={result.deadline}
       />
       {result.needs_review && (
         <p className="font-semibold" role="status">

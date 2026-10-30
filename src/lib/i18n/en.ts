@@ -198,6 +198,11 @@ export const en = {
   "lifecycle.status.current": "Current",
   "lifecycle.status.pending": "Pending",
   "lifecycle.aria": "Request lifecycle",
+  "lifecycle.deadline.due": "Decision due by {date} ({ref})",
+  "lifecycle.deadline.daysLeft": "{n} days left · due {date} ({ref})",
+  "lifecycle.deadline.overdue": "Deadline passed {date} ({ref})",
+  "lifecycle.deadline.decidedOnTime": "Decided on {date}, within the deadline",
+  "lifecycle.deadline.decidedLate": "Decided on {date}",
 
   // ── ExplanationPanel ─────────────────────────────────────────────────────────
   "explanation.heading": "Decision explanation",

@@ -4,6 +4,15 @@ export { SAMPLE_ENTRIES, type AccessRequest } from "./requests";
 
 export type Decision = "REJECT" | "APPROVE_STATISTICAL" | "APPROVE_SPE";
 
+export interface DecisionDeadline {
+  /** ISO 8601 date (UTC midnight) on which the decision is legally due. */
+  due: string;
+  /** Article reference, e.g. "Art. 68(4)". */
+  basis_ref: string;
+  /** Verbatim substring of the stored regulation paragraph. */
+  basis_quote: string;
+}
+
 export interface RegisterEntry {
   reference: string;
   date: string;
@@ -72,6 +81,7 @@ export interface DecisionResult {
   explanation?: DecisionExplanation;
   population?: { eligible_patients: number };
   timeline?: TimelineEvent[];
+  deadline?: DecisionDeadline | null;
 }
 export interface StaffAction {
   request_id: string;
