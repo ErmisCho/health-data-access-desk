@@ -79,11 +79,16 @@ export function LandingPage() {
                 </Link>
               </Button>
               <Link
-                to="/desk"
-                search={{ view: "demo" }}
+                to="/examples"
                 className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-4"
               >
                 See examples
+              </Link>
+              <Link
+                to="/how-we-decide"
+                className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-4"
+              >
+                How we decide
               </Link>
             </div>
             <ul aria-label="Safeguards" className="mt-8 flex flex-wrap gap-2">

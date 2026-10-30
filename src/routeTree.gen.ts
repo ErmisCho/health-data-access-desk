@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DeskRouteImport } from './routes/desk'
+import { Route as ExamplesRouteImport } from './routes/examples'
+import { Route as HowWeDecideRouteImport } from './routes/how-we-decide'
 import { Route as DeskLetterRequestIdRouteImport } from './routes/desk_.letter.$requestId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +25,16 @@ const DeskRoute = DeskRouteImport.update({
   path: '/desk',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExamplesRoute = ExamplesRouteImport.update({
+  id: '/examples',
+  path: '/examples',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowWeDecideRoute = HowWeDecideRouteImport.update({
+  id: '/how-we-decide',
+  path: '/how-we-decide',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DeskLetterRequestIdRoute = DeskLetterRequestIdRouteImport.update({
   id: '/desk_/letter/$requestId',
   path: '/desk/letter/$requestId',
@@ -32,30 +44,45 @@ const DeskLetterRequestIdRoute = DeskLetterRequestIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/desk': typeof DeskRoute
+  '/examples': typeof ExamplesRoute
+  '/how-we-decide': typeof HowWeDecideRoute
   '/desk/letter/$requestId': typeof DeskLetterRequestIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/desk': typeof DeskRoute
+  '/examples': typeof ExamplesRoute
+  '/how-we-decide': typeof HowWeDecideRoute
   '/desk/letter/$requestId': typeof DeskLetterRequestIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/desk': typeof DeskRoute
+  '/examples': typeof ExamplesRoute
+  '/how-we-decide': typeof HowWeDecideRoute
   '/desk_/letter/$requestId': typeof DeskLetterRequestIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/desk' | '/desk/letter/$requestId'
+  fullPaths:
+    '/' | '/desk' | '/examples' | '/how-we-decide' | '/desk/letter/$requestId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/desk' | '/desk/letter/$requestId'
-  id: '__root__' | '/' | '/desk' | '/desk_/letter/$requestId'
+  to: '/' | '/desk' | '/examples' | '/how-we-decide' | '/desk/letter/$requestId'
+  id:
+    | '__root__'
+    | '/'
+    | '/desk'
+    | '/examples'
+    | '/how-we-decide'
+    | '/desk_/letter/$requestId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DeskRoute: typeof DeskRoute
+  ExamplesRoute: typeof ExamplesRoute
+  HowWeDecideRoute: typeof HowWeDecideRoute
   DeskLetterRequestIdRoute: typeof DeskLetterRequestIdRoute
 }
 
@@ -75,6 +102,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DeskRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/examples': {
+      id: '/examples'
+      path: '/examples'
+      fullPath: '/examples'
+      preLoaderRoute: typeof ExamplesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-we-decide': {
+      id: '/how-we-decide'
+      path: '/how-we-decide'
+      fullPath: '/how-we-decide'
+      preLoaderRoute: typeof HowWeDecideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/desk_/letter/$requestId': {
       id: '/desk_/letter/$requestId'
       path: '/desk/letter/$requestId'
@@ -88,6 +129,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DeskRoute: DeskRoute,
+  ExamplesRoute: ExamplesRoute,
+  HowWeDecideRoute: HowWeDecideRoute,
   DeskLetterRequestIdRoute: DeskLetterRequestIdRoute,
 }
 export const routeTree = rootRouteImport

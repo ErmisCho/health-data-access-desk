@@ -13,8 +13,10 @@ async function renderLanding() {
   const root = createRootRoute();
   const index = createRoute({ getParentRoute: () => root, path: "/", component: LandingPage });
   const desk = createRoute({ getParentRoute: () => root, path: "/desk" });
+  const examples = createRoute({ getParentRoute: () => root, path: "/examples" });
+  const methodology = createRoute({ getParentRoute: () => root, path: "/how-we-decide" });
   const router = createRouter({
-    routeTree: root.addChildren([index, desk]),
+    routeTree: root.addChildren([index, desk, examples, methodology]),
     history: createMemoryHistory({ initialEntries: ["/"] }),
   });
   await router.load();
@@ -25,18 +27,29 @@ async function renderLanding() {
 afterEach(cleanup);
 
 describe("Landing page", () => {
-  it("links the hero actions to the applicant and demo views", async () => {
+  it("links the hero actions to the desk and transparency pages", async () => {
     await renderLanding();
     expect(screen.getByRole("link", { name: "Submit a request" })).toHaveAttribute("href", "/desk");
-    expect(screen.getByRole("link", { name: "See examples" })).toHaveAttribute(
-      "href",
-      "/desk?view=demo",
-    );
+    expect(screen.getByRole("link", { name: "See examples" })).toHaveAttribute("href", "/examples");
     expect(
       within(screen.getByRole("navigation", { name: "Main navigation" })).getByRole("link", {
         name: "EHDS Access Desk",
       }),
     ).toHaveAttribute("href", "/");
+    for (const scope of [
+      screen.getByRole("main"),
+      screen.getByRole("navigation", { name: "Main navigation" }),
+    ]) {
+      expect(within(scope).getByRole("link", { name: "How we decide" })).toHaveAttribute(
+        "href",
+        "/how-we-decide",
+      );
+    }
+    expect(
+      within(screen.getByRole("navigation", { name: "Main navigation" })).getByRole("link", {
+        name: "Examples",
+      }),
+    ).toHaveAttribute("href", "/examples");
   });
 
   it("explains the process in three ordered steps", async () => {
