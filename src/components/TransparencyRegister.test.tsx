@@ -152,6 +152,7 @@ it("register table scrollable container has overflow-x:auto, w-full, max-w-full,
   const region = screen.getByRole("region", { name: "Published decisions" });
   // jsdom does not compute Tailwind classes; check className tokens directly
   expect(region.className).toMatch(/overflow-x-auto/);
+  expect(region).toHaveClass("relative");
   expect(region.className).toMatch(/max-w-full/);
   expect(region.className).toMatch(/\bw-full\b/);
   expect(region.className).toMatch(/min-w-0/);

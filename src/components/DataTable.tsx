@@ -10,7 +10,7 @@ export function DataTable({ caption, children }: { caption: string; children: Re
       role="region"
       aria-label={`${caption} table, scroll horizontally if needed`}
       tabIndex={0}
-      className="overflow-x-auto rounded-lg border border-border bg-card"
+      className="relative overflow-x-auto rounded-lg border border-border bg-card"
     >
       <table className="w-full text-left text-sm">
         <caption className="sr-only">{caption}</caption>

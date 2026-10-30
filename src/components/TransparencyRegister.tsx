@@ -105,7 +105,7 @@ export function TransparencyRegister() {
                 role="region"
                 aria-label={t("register.ariaPublished")}
                 tabIndex={0}
-                className="w-full max-w-full min-w-0 overflow-x-auto rounded border border-border focus-visible:outline-2 focus-visible:outline-ring"
+                className="relative w-full max-w-full min-w-0 overflow-x-auto rounded border border-border focus-visible:outline-2 focus-visible:outline-ring"
               >
                 <table className="w-full min-w-[600px] text-left text-sm">
                   <caption className="sr-only">{t("register.caption")}</caption>
