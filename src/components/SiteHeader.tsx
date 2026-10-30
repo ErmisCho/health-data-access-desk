@@ -16,6 +16,12 @@ export function SiteHeader() {
         </Link>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-1">
           <Link
+            to="/register"
+            className="inline-flex min-h-11 items-center text-sm underline underline-offset-4"
+          >
+            Transparency register
+          </Link>
+          <Link
             to="/how-we-decide"
             className="inline-flex min-h-11 items-center text-sm underline underline-offset-4"
           >

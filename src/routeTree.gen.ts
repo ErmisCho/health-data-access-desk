@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DeskRouteImport } from './routes/desk'
 import { Route as ExamplesRouteImport } from './routes/examples'
 import { Route as HowWeDecideRouteImport } from './routes/how-we-decide'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as DeskLetterRequestIdRouteImport } from './routes/desk_.letter.$requestId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -35,6 +36,11 @@ const HowWeDecideRoute = HowWeDecideRouteImport.update({
   path: '/how-we-decide',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DeskLetterRequestIdRoute = DeskLetterRequestIdRouteImport.update({
   id: '/desk_/letter/$requestId',
   path: '/desk/letter/$requestId',
@@ -46,6 +52,7 @@ export interface FileRoutesByFullPath {
   '/desk': typeof DeskRoute
   '/examples': typeof ExamplesRoute
   '/how-we-decide': typeof HowWeDecideRoute
+  '/register': typeof RegisterRoute
   '/desk/letter/$requestId': typeof DeskLetterRequestIdRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/desk': typeof DeskRoute
   '/examples': typeof ExamplesRoute
   '/how-we-decide': typeof HowWeDecideRoute
+  '/register': typeof RegisterRoute
   '/desk/letter/$requestId': typeof DeskLetterRequestIdRoute
 }
 export interface FileRoutesById {
@@ -61,20 +69,33 @@ export interface FileRoutesById {
   '/desk': typeof DeskRoute
   '/examples': typeof ExamplesRoute
   '/how-we-decide': typeof HowWeDecideRoute
+  '/register': typeof RegisterRoute
   '/desk_/letter/$requestId': typeof DeskLetterRequestIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/desk' | '/examples' | '/how-we-decide' | '/desk/letter/$requestId'
+    | '/'
+    | '/desk'
+    | '/examples'
+    | '/how-we-decide'
+    | '/register'
+    | '/desk/letter/$requestId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/desk' | '/examples' | '/how-we-decide' | '/desk/letter/$requestId'
+  to:
+    | '/'
+    | '/desk'
+    | '/examples'
+    | '/how-we-decide'
+    | '/register'
+    | '/desk/letter/$requestId'
   id:
     | '__root__'
     | '/'
     | '/desk'
     | '/examples'
     | '/how-we-decide'
+    | '/register'
     | '/desk_/letter/$requestId'
   fileRoutesById: FileRoutesById
 }
@@ -83,6 +104,7 @@ export interface RootRouteChildren {
   DeskRoute: typeof DeskRoute
   ExamplesRoute: typeof ExamplesRoute
   HowWeDecideRoute: typeof HowWeDecideRoute
+  RegisterRoute: typeof RegisterRoute
   DeskLetterRequestIdRoute: typeof DeskLetterRequestIdRoute
 }
 
@@ -116,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HowWeDecideRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/desk_/letter/$requestId': {
       id: '/desk_/letter/$requestId'
       path: '/desk/letter/$requestId'
@@ -131,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeskRoute: DeskRoute,
   ExamplesRoute: ExamplesRoute,
   HowWeDecideRoute: HowWeDecideRoute,
+  RegisterRoute: RegisterRoute,
   DeskLetterRequestIdRoute: DeskLetterRequestIdRoute,
 }
 export const routeTree = rootRouteImport

@@ -3,6 +3,21 @@ export { SAMPLE_ENTRIES, type AccessRequest } from "./requests";
 
 export type Decision = "REJECT" | "APPROVE_STATISTICAL" | "APPROVE_SPE";
 
+export interface RegisterEntry {
+  reference: string;
+  date: string;
+  organisation_type: string;
+  purpose_category: string;
+  decision: Decision;
+  articles: string[];
+}
+
+export async function listRegister(): Promise<{ entries: RegisterEntry[] }> {
+  return requireData<{ entries: RegisterEntry[] }>(
+    await supabase.functions.invoke("register", { method: "GET" }),
+  );
+}
+
 export interface PreviewUnreadable {
   index: number;
   definition: string;
