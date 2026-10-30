@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { ArrowRight, Check, ClipboardPenLine, FileCheck2, Scale, ShieldCheck } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ import { useT } from "@/lib/i18n";
 
 export function LandingPage() {
   const t = useT();
+  useEffect(() => { document.title = t("page.title.home"); }, [t]);
 
   const steps = [
     {

@@ -1,9 +1,11 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { SiteHeader } from "./SiteHeader";
 import { useT } from "@/lib/i18n";
 
 export function HowWeDecide() {
   const t = useT();
+  useEffect(() => { document.title = t("page.title.howWeDecide"); }, [t]);
 
   const decisionOrder = [
     { title: t("hwd.order.item1.title"), text: t("hwd.order.item1.text") },

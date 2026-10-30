@@ -84,10 +84,16 @@ export const de: { [K in keyof EnDict]: string } = {
   "landing.footer.privacy": "Datenschutz und Rechtsgrundlage",
   "landing.footer.aiDisclosure": "KI-Offenlegung",
 
+  // ── Enum labels for requested_as / requested_format ─────────────────────────
+  "enum.requestedAs.healthDataRequest": "Datenantrag",
+  "enum.requestedAs.healthDataAccessApplication": "Datenzugangsantrag",
+  "enum.requestedFormat.anonymisedStatistics": "anonymisierte Statistik",
+  "enum.requestedFormat.pseudonymisedRecords": "pseudonymisierte Daten",
+
   // ── Desk page ────────────────────────────────────────────────────────────────
   "desk.eyebrow": "Zugangsstelle für Gesundheitsdaten (HDAB) · EHDS",
   "desk.heading": "EHDS Access Desk",
-  "desk.role.applicant": "Antragsteller/in",
+  "desk.role.applicant": "Antragsteller:in",
   "desk.role.staff": "Personal",
   "desk.role.demo": "Demo",
   "desk.roleLabel": "Ansicht",
@@ -107,14 +113,14 @@ export const de: { [K in keyof EnDict]: string } = {
   "form.uploadFile": "Datei hochladen",
   "form.importMustBeObject": "Der Import muss ein JSON-Objekt sein.",
   "form.couldNotParseJson": "JSON konnte nicht gelesen werden. Bitte gültiges JSON einfügen.",
-  "form.step1": "Antragsteller/in",
+  "form.step1": "Antragsteller:in",
   "form.step2": "Antragstyp",
   "form.step3": "Zweck",
   "form.step4": "Frage",
   "form.step5": "Definitionen",
   "form.step6": "Prüfen & einreichen",
   "form.steps.aria": "Formularschritte",
-  "form.applicant.legend": "Antragsteller/in",
+  "form.applicant.legend": "Antragsteller:in",
   "form.applicant.name": "Name",
   "form.applicant.org": "Organisation",
   "form.applicant.country": "Land (ISO-2-Buchstabencode)",
@@ -142,7 +148,7 @@ export const de: { [K in keyof EnDict]: string } = {
   "form.definitions.add": "+ Definition hinzufügen",
   "form.definitions.remove": "Definition entfernen",
   "form.review.legend": "Prüfen & einreichen",
-  "form.review.applicant": "Antragsteller/in",
+  "form.review.applicant": "Antragsteller:in",
   "form.review.organisation": "Organisation",
   "form.review.country": "Land",
   "form.review.requestedAs": "Eingereicht als",
@@ -263,6 +269,14 @@ export const de: { [K in keyof EnDict]: string } = {
   "results.group": "Gruppe",
   "results.groupN": "Gruppe",
   "results.noStats": "Keine statistischen Ergebnisse verfügbar.",
+
+  // ── Page titles (document.title) ─────────────────────────────────────────────
+  "page.title.home": "EHDS Access Desk \u2014 Kann dieser Gesundheitsdatenantrag genehmigt werden?",
+  "page.title.desk": "EHDS Access Desk \u2014 Zugangsstelle f\u00FCr Gesundheitsdaten (HDAB)",
+  "page.title.letter": "Bescheid \u2014 EHDS Access Desk",
+  "page.title.howWeDecide": "Wie wir entscheiden \u00B7 EHDS Access Desk",
+  "page.title.examples": "Beispielantr\u00E4ge \u00B7 EHDS Access Desk",
+  "page.title.register": "Transparenzregister \u00B7 EHDS Access Desk",
 
   // ── PDF headings ─────────────────────────────────────────────────────────────
   "pdf.heading.verdict": "Ergebnis",

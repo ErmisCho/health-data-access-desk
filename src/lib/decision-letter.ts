@@ -39,6 +39,7 @@ export function createDecisionLetter(
   result: DecisionResult,
   date = new Date(),
   t: TFn = makeDefaultT(),
+  locale = "en-GB",
 ) {
   const held = !!result.needs_review || result.status === "staff_review";
   const rows = result.decision === "APPROVE_STATISTICAL" ? answerRows(result.answer) : [];
@@ -78,7 +79,7 @@ export function createDecisionLetter(
   return {
     issuer: t("letter.issuer"),
     reference: result.request_id,
-    date: date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }),
+    date: date.toLocaleDateString(locale, { day: "numeric", month: "long", year: "numeric" }),
     decision: result.decision,
     verdict,
     timeline: result.timeline as TimelineEvent[] | undefined,

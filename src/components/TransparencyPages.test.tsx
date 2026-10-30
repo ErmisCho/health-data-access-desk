@@ -139,7 +139,7 @@ it("shows ten original questions, applicant types, expected badges and reasons w
       "false",
     );
   });
-  expect(cards[8]).toHaveTextContent("Requested records are downgraded");
+  expect(cards[8]).toHaveTextContent("pseudonymised records are not justified");
   expect(invoke).not.toHaveBeenCalled();
 });
 

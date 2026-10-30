@@ -1,83 +1,153 @@
 /**
  * Front-end translation lookup for backend-supplied text.
  *
- * Backend fields (reason, rule label, article summary, plan_summary) come in
- * English. For German, map the known English strings to German translations.
- * If a string is not in the lookup, it is returned unchanged (English fallback).
- *
- * Covers outcomes R01-R10 and the rule labels found in decision_rules.json.
+ * Backend fields (reason, rule label, article title, article summary,
+ * plan_summary, purpose_category) come in English from the API.
+ * For German, map the known English strings to German translations
+ * using the exact strings from backend-strings.en.json.
+ * If a string is not in the lookup it is returned unchanged (English fallback).
  *
  * plan_summary always stays in English; the DE suffix " (Englisch)" is added
  * by the component that renders it.
+ *
+ * Matching is done after trimming and normalising quotes on both sides.
  */
 
-/** Map English reason/rule text → German translation. */
-const REASON_DE: Record<string, string> = {
-  // ── decision reasons (result.reason) ────────────────────────────────────────
-  "Prevention planning receives anonymised regional statistics.":
-    "Präventionsplanung erhält anonymisierte regionale Statistiken.",
-  "Insurance premium pricing is prohibited by Art. 54(1)(b).":
-    "Versicherungsprämiengestaltung ist nach Art. 54 Abs. 1 Buchst. b verboten.",
-  "Healthcare quality planning receives anonymised statistics.":
-    "Qualitätsplanung im Gesundheitswesen erhält anonymisierte Statistiken.",
-  "Advertising is prohibited by Art. 54(1)(c).":
-    "Werbung ist nach Art. 54 Abs. 1 Buchst. c verboten.",
-  "Individual histories are justified for model training in a secure environment.":
-    "Individuelle Verläufe sind für das Modelltraining in einer sicheren Verarbeitungsumgebung gerechtfertigt.",
-  "Employment decisions are prohibited by Art. 54(1)(b).":
-    "Beschäftigungsentscheidungen sind nach Art. 54 Abs. 1 Buchst. b verboten.",
-  "Official health reporting receives anonymised statistics.":
-    "Amtliche Gesundheitsberichterstattung erhält anonymisierte Statistiken.",
-  "Cancer prevention research receives statistics with small-cell suppression.":
-    "Krebspräventionsforschung erhält Statistiken mit Unterdrückung kleiner Zellen.",
-  "Requested records are downgraded: no justification why statistics are insufficient.":
-    "Beantragte Datensätze werden herabgestuft: keine Begründung, warum Statistiken unzureichend sind.",
-  "Nicotine product development is prohibited by Art. 54(1)(d).":
-    "Nikotinproduktentwicklung ist nach Art. 54 Abs. 1 Buchst. d verboten.",
+import type { Lang } from "../i18n";
 
-  // ── rule labels from decision_rules.json (result.explanation.rule) ──────────
-  "Prohibited purpose: insurance underwriting":
-    "Verbotener Zweck: Versicherungsrisikobewertung",
-  "Prohibited purpose: employment decisions":
-    "Verbotener Zweck: Beschäftigungsentscheidungen",
-  "Prohibited purpose: advertising or marketing":
-    "Verbotener Zweck: Werbung oder Marketing",
-  "Prohibited purpose: harmful or addictive products":
-    "Verbotener Zweck: schädliche oder suchterzeugende Produkte",
-  "Health data request: approved for anonymised statistics":
-    "Datenantrag: genehmigt für anonymisierte Statistiken",
-  "Health data access application: justified access to pseudonymised records":
-    "Datenzugangsantrag: begründeter Zugang zu pseudonymisierten Daten",
-  "Health data access application: downgraded to anonymised statistics":
-    "Datenzugangsantrag: herabgestuft auf anonymisierte Statistiken",
-  "Unclear purpose: held for staff review":
-    "Unklarer Zweck: zur Mitarbeiterprüfung zurückgehalten",
-  "Unreadable definitions: held for staff review":
-    "Unleserliche Definitionen: zur Mitarbeiterprüfung zurückgehalten",
+/** Map English backend text → German translation. */
+const BACKEND_DE: Record<string, string> = {
+  // ── Decision reasons (result.reason) ─────────────────────────────────────
+  "Advertising and marketing are prohibited purposes for health data (Art. 54).":
+    "Werbung und Marketing sind verbotene Zwecke für Gesundheitsdaten (Art. 54).",
 
-  // ── article summaries commonly appearing in explanations ────────────────────
-  "Article 54 lists the purposes for which secondary use of health data is prohibited.":
-    "Artikel 54 listet die Zwecke auf, für die die Sekundärnutzung von Gesundheitsdaten verboten ist.",
-  "Article 53 permits secondary use of health data for specified purposes.":
-    "Artikel 53 erlaubt die Sekundärnutzung von Gesundheitsdaten für bestimmte Zwecke.",
-  "Article 69 governs the provision of anonymised statistics from health data.":
-    "Artikel 69 regelt die Bereitstellung anonymisierter Statistiken aus Gesundheitsdaten.",
-  "Article 66 sets out the conditions for access to health data in a secure processing environment.":
-    "Artikel 66 legt die Bedingungen für den Zugang zu Gesundheitsdaten in einer sicheren Verarbeitungsumgebung fest.",
-  "Article 68 sets technical and organisational measures for the secure processing environment.":
-    "Artikel 68 legt technische und organisatorische Maßnahmen für die sichere Verarbeitungsumgebung fest.",
-  "Article 73 requires logging of all access and use within the secure processing environment.":
-    "Artikel 73 schreibt die Protokollierung aller Zugriffe und Nutzungen in der sicheren Verarbeitungsumgebung vor.",
-  "Article 71 requires health data access bodies to apply opt-out registries.":
-    "Artikel 71 verpflichtet die Zugangsstellen für Gesundheitsdaten zur Anwendung von Widerspruchsregistern.",
+  "Developing or marketing nicotine or tobacco products is a prohibited purpose for health data (Art. 54).":
+    "Die Entwicklung oder Vermarktung von Nikotin- oder Tabakprodukten ist ein verbotener Zweck für Gesundheitsdaten (Art. 54).",
+
+  "Using health data for decisions about employees, or matching it with an employee list, is prohibited (Art. 54). This could re-identify individuals and harm them.":
+    "Die Verwendung von Gesundheitsdaten für Entscheidungen über Beschäftigte oder deren Abgleich mit einer Mitarbeiterliste ist verboten (Art. 54). Dies könnte Personen re-identifizieren und schaden.",
+
+  "Using health data to set or align insurance premiums is prohibited (Art. 54).":
+    "Die Verwendung von Gesundheitsdaten zur Festsetzung oder Angleichung von Versicherungsprämien ist verboten (Art. 54).",
+
+  "Your purpose is an allowed use of health data (Art. 53). Anonymised statistics are sufficient to answer the question (Art. 69).":
+    "Ihr Zweck ist eine zulässige Nutzung von Gesundheitsdaten (Art. 53). Anonymisierte Statistiken sind ausreichend, um die Frage zu beantworten (Art. 69).",
+
+  "Your purpose is an allowed use of health data (Art. 53). Anonymised statistics are sufficient to answer the question; pseudonymised records are not justified under Art. 66. Your request is approved as statistics (Art. 69).":
+    "Ihr Zweck ist eine zulässige Nutzung von Gesundheitsdaten (Art. 53). Anonymisierte Statistiken sind ausreichend, um die Frage zu beantworten; pseudonymisierte Daten sind nach Art. 66 nicht gerechtfertigt. Ihr Antrag wird als Statistik genehmigt (Art. 69).",
+
+  "Your purpose is an allowed use of health data (Art. 53). You have explained why anonymised statistics are not sufficient; pseudonymised patient-level data is justified (Art. 66). Access is granted inside a secure processing environment under a data permit (Art. 68, 73).":
+    "Ihr Zweck ist eine zulässige Nutzung von Gesundheitsdaten (Art. 53). Sie haben erläutert, warum anonymisierte Statistiken nicht ausreichend sind; pseudonymisierte Patientendaten sind gerechtfertigt (Art. 66). Der Zugang wird in einer sicheren Verarbeitungsumgebung im Rahmen eines Datengenehmigungsverfahrens gewährt (Art. 68, 73).",
+
+  // ── Rule labels (result.explanation.rule) ────────────────────────────────
+  "Approved for anonymised statistics – access application (Art. 53, 66, 69)":
+    "Genehmigt für anonymisierte Statistiken – Datenzugangsantrag (Art. 53, 66, 69)",
+
+  "Approved for anonymised statistics – health data request (Art. 53, 69)":
+    "Genehmigt für anonymisierte Statistiken – Datenantrag (Art. 53, 69)",
+
+  "Approved for pseudonymised access – secure processing environment (Art. 53, 66, 68, 73)":
+    "Genehmigt für pseudonymisierten Zugang – sichere Verarbeitungsumgebung (Art. 53, 66, 68, 73)",
+
+  "Prohibited purpose (Art. 54)":
+    "Verbotener Zweck (Art. 54)",
+
+  // ── Article titles ────────────────────────────────────────────────────────
+  "Data minimisation and purpose limitation":
+    "Datensparsamkeit und Zweckbindung",
+
+  "Data permit":
+    "Datengenehmigung",
+
+  "Health data request":
+    "Datenantrag",
+
+  "Prohibited secondary use":
+    "Verbotene Sekundärnutzung",
+
+  "Purposes for which electronic health data can be processed for secondary use":
+    "Zwecke, für die elektronische Gesundheitsdaten zur Sekundärnutzung verarbeitet werden dürfen",
+
+  "Secure processing environment":
+    "Sichere Verarbeitungsumgebung",
+
+  // ── Article summaries ─────────────────────────────────────────────────────
+  "Allows applicants to request anonymised statistical answers (a 'health data request') without needing a full data permit.":
+    "Erm\u00F6glicht es Antragstellenden, anonymisierte statistische Antworten (einen \u201EDatenantrag\u201C) anzufordern, ohne eine vollst\u00E4ndige Datengenehmigung zu ben\u00F6tigen.",
+
+  "Governs the issuing of data permits: the access body assesses the application and may grant a time-limited permit for secure access.":
+    "Regelt die Ausstellung von Datengenehmigungen: Die Zugangsstelle prüft den Antrag und kann eine befristete Genehmigung für den sicheren Zugang erteilen.",
+
+  "Lists the allowed purposes for accessing health data for secondary use, including research, statistics, education, and quality improvement.":
+    "Listet die zulässigen Zwecke für den Zugang zu Gesundheitsdaten zur Sekundärnutzung auf, einschließlich Forschung, Statistik, Bildung und Qualitätsverbesserung.",
+
+  "Prohibits using health data for insurance decisions, advertising, harmful products, employee profiling, or third-party sharing outside the permit.":
+    "Verbietet die Nutzung von Gesundheitsdaten für Versicherungsentscheidungen, Werbung, schädliche Produkte, Mitarbeiterprofilierung oder Weitergabe an Dritte außerhalb der Genehmigung.",
+
+  "Requires that only the minimum necessary data be provided, in anonymised form unless pseudonymised data is justified.":
+    "Verlangt, dass nur die minimal notwendigen Daten bereitgestellt werden, in anonymisierter Form, sofern pseudonymisierte Daten nicht gerechtfertigt sind.",
+
+  "Requires that pseudonymised data be accessed only through a secure processing environment managed by the access body.":
+    "Verlangt, dass auf pseudonymisierte Daten nur über eine sichere Verarbeitungsumgebung zugegriffen wird, die von der Zugangsstelle verwaltet wird.",
+
+  // ── Register purpose categories ───────────────────────────────────────────
+  "advertising or marketing":
+    "Werbung oder Marketing",
+
+  "AI/model training or validation":
+    "KI-/Modelltraining oder -validierung",
+
+  "clinical / epidemiological / treatment-gap":
+    "klinisch / epidemiologisch / Versorgungslücke",
+
+  "detrimental decisions about employees / re-identification":
+    "nachteilige Entscheidungen über Beschäftigte / Re-Identifizierung",
+
+  "development of alcoholic products":
+    "Entwicklung von Alkoholprodukten",
+
+  "insurance premiums / insurance decisions":
+    "Versicherungsprämien / Versicherungsentscheidungen",
+
+  "passing data to third parties not in permit":
+    "Weitergabe von Daten an Dritte, die nicht in der Genehmigung aufgeführt sind",
+
+  "prevention / guidelines / quality":
+    "Prävention / Leitlinien / Qualität",
+
+  "public health":
+    "öffentliche Gesundheit",
+
+  "re-identification of data subjects":
+    "Re-Identifizierung von betroffenen Personen",
+
+  "scientific research":
+    "wissenschaftliche Forschung",
+
+  "statistics / aggregates are not sufficient":
+    "Statistiken / Aggregate sind nicht ausreichend",
+
+  "tobacco / nicotine / illicit products":
+    "Tabak / Nikotin / illegale Produkte",
+
+  "weapons or illicit drugs":
+    "Waffen oder illegale Drogen",
 };
+
+function normalizeBackendText(text: string): string {
+  return text.trim().replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+}
+
+const NORMALIZED_BACKEND_DE: Record<string, string> = Object.fromEntries(
+  Object.entries(BACKEND_DE).map(([key, value]) => [normalizeBackendText(key), value]),
+);
 
 /**
  * Translate a backend-supplied string to German.
- * Falls back to the English original when no translation is available.
+ * Trims and normalises quotes before lookup; falls back to the English original.
  */
 export function translateToDE(text: string): string {
-  return REASON_DE[text] ?? text;
+  return NORMALIZED_BACKEND_DE[normalizeBackendText(text)] ?? text;
 }
 
 /**
@@ -85,7 +155,7 @@ export function translateToDE(text: string): string {
  * For "en" the text is returned unchanged.
  * For "de" the lookup is applied; untranslated strings stay in English.
  */
-export function localizeBackendText(text: string, lang: "en" | "de"): string {
+export function localizeBackendText(text: string, lang: Lang): string {
   if (lang === "en") return text;
   return translateToDE(text);
 }

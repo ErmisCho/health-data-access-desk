@@ -2,10 +2,30 @@ import { useEffect, useState } from "react";
 import { listRegister, type RegisterEntry, type Decision } from "@/lib/ehds";
 import { DecisionBadge } from "./DecisionBadge";
 import { SiteHeader } from "./SiteHeader";
-import { useT } from "@/lib/i18n";
+import { useT, useLang } from "@/lib/i18n";
+import { localizeBackendText } from "@/lib/i18n/translations";
+
+/** Format a date-only YYYY-MM-DD value for display. Parses by parts to avoid UTC shift. */
+function fmtRegDate(raw: string, locale: string): string {
+  if (!raw) return raw;
+  // Match YYYY-MM-DD (date-only) — parse as local date to avoid UTC timezone shift
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+  if (m) {
+    // For en (en-GB default): keep YYYY-MM-DD; for de-AT: show in DE format
+    if (!locale.startsWith("de")) return raw;
+    const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+    return d.toLocaleDateString(locale);
+  }
+  // Non-date-only strings: fall back to raw
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return raw;
+  return d.toLocaleDateString(locale);
+}
 
 export function TransparencyRegister() {
   const t = useT();
+  const { lang } = useLang();
+  useEffect(() => { document.title = t("page.title.register"); }, [t]);
   const [entries, setEntries] = useState<RegisterEntry[]>([]);
   const [filter, setFilter] = useState<Decision | "">("");
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
@@ -112,10 +132,10 @@ export function TransparencyRegister() {
                           {entry.reference}
                         </th>
                         <td className="whitespace-nowrap px-4 py-4">
-                          <time dateTime={entry.date}>{entry.date}</time>
+                          <time dateTime={entry.date}>{fmtRegDate(entry.date, lang === "de" ? "de-AT" : "en-GB")}</time>
                         </td>
-                        <td className="px-4 py-4">{entry.organisation_type}</td>
-                        <td className="px-4 py-4">{entry.purpose_category}</td>
+                        <td className="px-4 py-4">{localizeBackendText(entry.organisation_type, lang)}</td>
+                        <td className="px-4 py-4">{localizeBackendText(entry.purpose_category, lang)}</td>
                         <td className="px-4 py-4">
                           <DecisionBadge decision={entry.decision} />
                         </td>

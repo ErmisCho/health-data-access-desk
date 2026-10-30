@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { getRequest } from "@/lib/ehds";
 import { createDecisionLetter } from "@/lib/decision-letter";
 import { DecisionLetter } from "@/components/DecisionLetter";
 import { EmptyState, ErrorState } from "@/components/States";
-import { useT } from "@/lib/i18n";
+import { useT, useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/desk_/letter/$requestId")({
   loader: async ({ params }) => getRequest(params.requestId),
@@ -27,6 +28,9 @@ export const Route = createFileRoute("/desk_/letter/$requestId")({
 function LetterPage() {
   const result = Route.useLoaderData();
   const t = useT();
-  const letter = createDecisionLetter(result, new Date(), t);
+  const { lang } = useLang();
+  const locale = lang === "de" ? "de-AT" : "en-GB";
+  const letter = createDecisionLetter(result, new Date(), t, locale);
+  useEffect(() => { document.title = t("page.title.letter"); }, [t]);
   return <DecisionLetter letter={letter} />;
 }

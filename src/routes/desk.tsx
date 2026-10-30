@@ -31,6 +31,7 @@ function Desk() {
   const [role, setRole] = useState<"applicant" | "staff" | "demo">(view ?? "applicant");
   const t = useT();
   useEffect(() => setRole(view ?? "applicant"), [view]);
+  useEffect(() => { document.title = t("page.title.desk"); }, [t]);
   return (
     <div className="min-h-screen font-sans">
       <SiteHeader />

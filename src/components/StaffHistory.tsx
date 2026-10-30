@@ -12,7 +12,7 @@ import { DecisionDetails } from "./DecisionDetails";
 import { DecisionBadge } from "./DecisionBadge";
 import { DataTable } from "./DataTable";
 import { EmptyState, ErrorState } from "./States";
-import { useT } from "@/lib/i18n";
+import { useT, useLang } from "@/lib/i18n";
 
 const OVERRIDE_DECISIONS: Decision[] = ["REJECT", "APPROVE_STATISTICAL", "APPROVE_SPE"];
 
@@ -143,8 +143,17 @@ function ReviewForm({
   );
 }
 
+function fmtDate(raw: string, locale: string): string {
+  if (!raw) return raw;
+  const d = new Date(raw);
+  if (isNaN(d.getTime())) return raw;
+  return d.toLocaleString(locale);
+}
+
 export function StaffHistory() {
   const t = useT();
+  const { lang } = useLang();
+  const locale = lang === "de" ? "de-AT" : "en-GB";
   const [history, setHistory] = useState<RequestHistory | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [result, setResult] = useState<DecisionResult | null>(null);
@@ -261,7 +270,7 @@ export function StaffHistory() {
                         {t("staff.queue.awaitingBadge")}
                       </span>
                       <DecisionBadge decision={row.decision} />
-                      <span className="text-xs text-muted-foreground">{row.submitted_at}</span>
+                      <span className="text-xs text-muted-foreground">{fmtDate(row.submitted_at, locale)}</span>
                     </div>
                     <ReviewForm row={row} onDone={handleReviewDone} />
                   </div>
@@ -304,7 +313,7 @@ export function StaffHistory() {
                     <th scope="row" className="p-3">
                       {row.request_id}
                     </th>
-                    <td className="p-3">{row.submitted_at}</td>
+                    <td className="p-3">{fmtDate(row.submitted_at, locale)}</td>
                     <td className="p-3">
                       <DecisionBadge decision={row.decision} />
                     </td>
@@ -408,7 +417,7 @@ export function StaffHistory() {
                         </td>
                         <td className="max-w-xs p-3 text-sm">{a.reason}</td>
                         <td className="p-3">
-                          {new Date(a.created_at).toLocaleString()}
+                         {fmtDate(a.created_at, locale)}
                         </td>
                       </tr>
                     ))}
@@ -449,7 +458,7 @@ export function StaffHistory() {
                       <th scope="row" className="p-3">
                         {attempt.request_id}
                       </th>
-                      <td className="p-3">{attempt.attempted_at}</td>
+                      <td className="p-3">{fmtDate(attempt.attempted_at, locale)}</td>
                       <td className="p-3">{t("staff.download.blocked")}</td>
                     </tr>
                   ))}

@@ -98,7 +98,7 @@ it("loads live history, saved results and refreshed blocked-download attempts", 
   const log = await screen.findByRole("table", {
     name: "Blocked download attempts",
   });
-  expect(within(log).getByText("2026-10-29T18:31:00Z")).toBeInTheDocument();
+  expect(within(log).getByText(new Date("2026-10-29T18:31:00Z").toLocaleString("en-GB"))).toBeInTheDocument();
   expect(within(log).getByText("Blocked")).toBeInTheDocument();
   await waitFor(() =>
     expect(

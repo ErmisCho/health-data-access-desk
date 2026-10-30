@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { TimelineEvent } from "@/lib/ehds";
-import { useT } from "@/lib/i18n";
+import { useT, useLang } from "@/lib/i18n";
 
 const steps = ["Submitted", "Assessed", "Staff review", "Decided", "Fulfilled"] as const;
 export type LifecycleStep = (typeof steps)[number];
@@ -13,11 +13,11 @@ const STATUS_TO_STEP: Record<TimelineEvent["status"], LifecycleStep> = {
   fulfilled: "Fulfilled",
 };
 
-function formatAt(at: string): string {
+function formatAt(at: string, locale: string): string {
   if (!at) return "";
   const d = new Date(at);
   if (isNaN(d.getTime())) return "";
-  return d.toLocaleString();
+  return d.toLocaleString(locale);
 }
 
 /**
@@ -30,7 +30,7 @@ function formatAt(at: string): string {
  * - hideFulfilled: true when the terminal decided step has no fulfilled event in the timeline
  *   (REJECT path: show only Submitted→Assessed→Decided)
  */
-function fromTimeline(timeline: TimelineEvent[]): {
+function fromTimeline(timeline: TimelineEvent[], locale: string): {
   current: LifecycleStep;
   needsReview: boolean;
   timestamps: Partial<Record<LifecycleStep, string>>;
@@ -45,7 +45,7 @@ function fromTimeline(timeline: TimelineEvent[]): {
   for (const event of timeline) {
     const step = STATUS_TO_STEP[event.status];
     if (step) {
-      const formatted = formatAt(event.at);
+      const formatted = formatAt(event.at, locale);
       if (formatted) timestamps[step] = formatted;
       current = step;
     }
@@ -76,6 +76,8 @@ export function LifecycleStepper({
   timeline?: TimelineEvent[];
 }) {
   const t = useT();
+  const { lang } = useLang();
+  const locale = lang === "de" ? "de-AT" : "en-GB";
 
   // Map internal step names to translated labels
   const stepLabel: Record<LifecycleStep, string> = {
@@ -89,7 +91,7 @@ export function LifecycleStepper({
   // If a timeline is supplied, derive all display values from it.
   const hasTimeline = timeline && timeline.length > 0;
   const resolved = hasTimeline
-    ? fromTimeline(timeline)
+    ? fromTimeline(timeline, locale)
     : {
         current: currentProp ?? "Submitted",
         needsReview,

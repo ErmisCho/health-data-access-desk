@@ -13,34 +13,43 @@ import { useLang } from "@/lib/i18n";
 const expected: Record<string, { decision: Decision; reason: string }> = {
   R01: {
     decision: "APPROVE_STATISTICAL",
-    reason: "Prevention planning receives anonymised regional statistics.",
+    reason: "Your purpose is an allowed use of health data (Art. 53). Anonymised statistics are sufficient to answer the question (Art. 69).",
   },
-  R02: { decision: "REJECT", reason: "Insurance premium pricing is prohibited by Art. 54(1)(b)." },
+  R02: {
+    decision: "REJECT",
+    reason: "Using health data to set or align insurance premiums is prohibited (Art. 54).",
+  },
   R03: {
     decision: "APPROVE_STATISTICAL",
-    reason: "Healthcare quality planning receives anonymised statistics.",
+    reason: "Your purpose is an allowed use of health data (Art. 53). Anonymised statistics are sufficient to answer the question (Art. 69).",
   },
-  R04: { decision: "REJECT", reason: "Advertising is prohibited by Art. 54(1)(c)." },
+  R04: {
+    decision: "REJECT",
+    reason: "Advertising and marketing are prohibited purposes for health data (Art. 54).",
+  },
   R05: {
     decision: "APPROVE_SPE",
-    reason: "Individual histories are justified for model training in a secure environment.",
+    reason: "Your purpose is an allowed use of health data (Art. 53). You have explained why anonymised statistics are not sufficient; pseudonymised patient-level data is justified (Art. 66). Access is granted inside a secure processing environment under a data permit (Art. 68, 73).",
   },
-  R06: { decision: "REJECT", reason: "Employment decisions are prohibited by Art. 54(1)(b)." },
+  R06: {
+    decision: "REJECT",
+    reason: "Using health data for decisions about employees, or matching it with an employee list, is prohibited (Art. 54). This could re-identify individuals and harm them.",
+  },
   R07: {
     decision: "APPROVE_STATISTICAL",
-    reason: "Official health reporting receives anonymised statistics.",
+    reason: "Your purpose is an allowed use of health data (Art. 53). Anonymised statistics are sufficient to answer the question (Art. 69).",
   },
   R08: {
     decision: "APPROVE_STATISTICAL",
-    reason: "Cancer prevention research receives statistics with small-cell suppression.",
+    reason: "Your purpose is an allowed use of health data (Art. 53). Anonymised statistics are sufficient to answer the question (Art. 69).",
   },
   R09: {
     decision: "APPROVE_STATISTICAL",
-    reason: "Requested records are downgraded: no justification why statistics are insufficient.",
+    reason: "Your purpose is an allowed use of health data (Art. 53). Anonymised statistics are sufficient to answer the question; pseudonymised records are not justified under Art. 66. Your request is approved as statistics (Art. 69).",
   },
   R10: {
     decision: "REJECT",
-    reason: "Nicotine product development is prohibited by Art. 54(1)(d).",
+    reason: "Developing or marketing nicotine or tobacco products is a prohibited purpose for health data (Art. 54).",
   },
 };
 
@@ -49,6 +58,7 @@ type Sample = (typeof SAMPLE_ENTRIES)[number];
 export function ExamplesGallery() {
   const t = useT();
   const { lang } = useLang();
+  useEffect(() => { document.title = t("page.title.examples"); }, [t]);
   const [selected, setSelected] = useState<Sample | null>(null);
   const [result, setResult] = useState<DecisionResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -100,7 +110,10 @@ export function ExamplesGallery() {
                 <span className="font-mono text-sm text-accent">{sample.id}</span>
                 <span className="text-lg font-semibold">{sample.request.question}</span>
                 <span className="text-sm text-muted-foreground">
-                  {t("examples.applicantType")} {sample.request.requested_as}
+                  {t("examples.applicantType")}{" "}
+                  {sample.request.requested_as === "health data access application"
+                    ? t("enum.requestedAs.healthDataAccessApplication")
+                    : t("enum.requestedAs.healthDataRequest")}
                 </span>
                 <span className="text-xs text-muted-foreground">{t("examples.expectedDecision")}</span>
                 <DecisionBadge decision={expected[sample.id]!.decision} />

@@ -92,6 +92,12 @@ export const en = {
   "desk.inputMode": "Input mode",
   "desk.decision.heading": "Decision",
 
+  // ── Enum labels for requested_as / requested_format ─────────────────────────
+  "enum.requestedAs.healthDataRequest": "health data request",
+  "enum.requestedAs.healthDataAccessApplication": "health data access application",
+  "enum.requestedFormat.anonymisedStatistics": "anonymised statistics",
+  "enum.requestedFormat.pseudonymisedRecords": "pseudonymised records",
+
   // ── GuidedForm ───────────────────────────────────────────────────────────────
   "form.loadSample": "Load a sample",
   "form.chooseSample": "— choose a sample —",
@@ -253,6 +259,14 @@ export const en = {
   "results.group": "Group",
   "results.groupN": "Group",
   "results.noStats": "No statistical results available.",
+
+  // ── Page titles (document.title) ─────────────────────────────────────────────
+  "page.title.home": "EHDS Access Desk \u2014 Can this health-data request be approved?",
+  "page.title.desk": "EHDS Access Desk \u2014 Health Data Access Body",
+  "page.title.letter": "Decision letter \u2014 EHDS Access Desk",
+  "page.title.howWeDecide": "How we decide \u00B7 EHDS Access Desk",
+  "page.title.examples": "Example requests \u00B7 EHDS Access Desk",
+  "page.title.register": "Transparency register \u00B7 EHDS Access Desk",
 
   // ── PDF headings ─────────────────────────────────────────────────────────────
   "pdf.heading.verdict": "Verdict",

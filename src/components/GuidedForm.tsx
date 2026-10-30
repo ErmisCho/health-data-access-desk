@@ -694,13 +694,17 @@ export function GuidedForm({
                   <dd>{form.applicant.country || "—"}</dd>
                 </div>
                 <div className="flex gap-2">
-                  <dt className="font-medium w-32 shrink-0">{t("form.review.requestedAs")}</dt>
-                  <dd>{form.requested_as}</dd>
-                </div>
-                <div className="flex gap-2">
-                  <dt className="font-medium w-32 shrink-0">{t("form.review.format")}</dt>
-                  <dd>{form.requested_format}</dd>
-                </div>
+                   <dt className="font-medium w-32 shrink-0">{t("form.review.requestedAs")}</dt>
+                   <dd>{form.requested_as === "health data access application"
+                     ? t("enum.requestedAs.healthDataAccessApplication")
+                     : t("enum.requestedAs.healthDataRequest")}</dd>
+                 </div>
+                 <div className="flex gap-2">
+                   <dt className="font-medium w-32 shrink-0">{t("form.review.format")}</dt>
+                   <dd>{form.requested_format === "pseudonymised records"
+                     ? t("enum.requestedFormat.pseudonymisedRecords")
+                     : t("enum.requestedFormat.anonymisedStatistics")}</dd>
+                 </div>
                 <div className="flex gap-2">
                   <dt className="font-medium w-32 shrink-0">{t("form.review.purpose")}</dt>
                   <dd className="line-clamp-3">{form.purpose || "—"}</dd>
