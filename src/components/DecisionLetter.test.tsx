@@ -171,3 +171,65 @@ describe("Decision letter PDF", () => {
     expect(pdf.output()).toContain("Conditions and next steps");
   });
 });
+
+describe("Memo in decision letter (Issue #35)", () => {
+  const memoResult: DecisionResult = {
+    ...statistics,
+    request_id: "R08-memo",
+    memo: {
+      text: 'Approved under Article 53 which allows "scientific research related to health or care sectors".',
+      quotes: [{ text: "scientific research related to health or care sectors", ref: "Art. 53(1)" }],
+      model: "ibm/granite-13b-instruct-v2",
+    },
+  };
+
+  it("renders memo section in DecisionLetter when memo is present", () => {
+    const letter = createDecisionLetter(memoResult, date);
+    render(<DecisionLetter letter={letter} />);
+    expect(screen.getByText("AI-drafted reasoning memo (quotes verified)")).toBeInTheDocument();
+    expect(screen.getByText(/Approved under Article 53/)).toBeInTheDocument();
+    // Memo section is accessible by its region role
+    expect(
+      screen.getByRole("region", { name: "AI-drafted reasoning memo (quotes verified)" }),
+    ).toBeInTheDocument();
+  });
+
+  it("does not render memo section when memo is absent", () => {
+    const letter = createDecisionLetter(statistics, date);
+    render(<DecisionLetter letter={letter} />);
+    expect(
+      screen.queryByText("AI-drafted reasoning memo (quotes verified)"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("memo section never contains PRIVATE_SCHEMA or patient record keys", () => {
+    // Only check that SPE private schema and patient record strings don't appear in the memo
+    // (the table may show answer data for statistical results, which is intended)
+    const privateResult: DecisionResult = {
+      ...memoResult,
+      // Use an SPE result where answer is cohort_size only — private records never go to table
+      decision: "APPROVE_SPE",
+      answer: { cohort_size: 42 },
+      spe_schema: "PRIVATE_SCHEMA",
+    };
+    const letter = createDecisionLetter(privateResult, date);
+    expect(JSON.stringify(letter)).not.toContain("PRIVATE_SCHEMA");
+    render(<DecisionLetter letter={letter} />);
+    expect(screen.queryByText(/PRIVATE_/)).not.toBeInTheDocument();
+  });
+
+  it("createDecisionLetter passes memo heading and label from t()", () => {
+    const letter = createDecisionLetter(memoResult, date);
+    expect(letter.memo).toBeDefined();
+    expect(letter.memo?.heading).toBe("AI-drafted reasoning memo (quotes verified)");
+    expect(letter.memo?.label).toBe("AI-drafted");
+    expect(letter.memo?.text).toContain("Approved under Article 53");
+    expect(letter.memo?.quotes).toHaveLength(1);
+    expect(letter.memo?.quotes[0]?.ref).toBe("Art. 53(1)");
+  });
+
+  it("createDecisionLetter omits memo when result.memo is absent", () => {
+    const letter = createDecisionLetter(statistics, date);
+    expect(letter.memo).toBeUndefined();
+  });
+});

@@ -123,3 +123,87 @@ it.each(SAMPLE_ENTRIES)("renders the original purpose and question for $id", ({ 
   );
   expect(container.querySelector("mark")?.textContent).toBe(phrase);
 });
+
+// ── Memo rendering tests (Issue #35) ─────────────────────────────────────────
+import type { AiMemo } from "@/lib/ehds";
+
+const verifiedMemo: AiMemo = {
+  text: 'The request is approved for statistical access under Article 53, which permits "scientific research related to health or care sectors".',
+  quotes: [
+    {
+      text: "scientific research related to health or care sectors",
+      ref: "Art. 53(1)",
+    },
+  ],
+  model: "ibm/granite-13b-instruct-v2",
+};
+
+it("renders memo block with heading, text and quotes when memo is provided", () => {
+  render(
+    <ExplanationPanel
+      explanation={explanation}
+      memo={verifiedMemo}
+    />,
+  );
+  // The heading text appears as a section aria-label and h4 — check aria region is present
+  expect(
+    screen.getByRole("region", { name: "AI-drafted reasoning memo (quotes verified)" }),
+  ).toBeInTheDocument();
+  expect(screen.getByText(/The request is approved for statistical access/)).toBeInTheDocument();
+});
+
+it("does not render memo block when memo is absent", () => {
+  render(<ExplanationPanel explanation={explanation} />);
+  expect(
+    screen.queryByText("AI-drafted reasoning memo (quotes verified)"),
+  ).not.toBeInTheDocument();
+});
+
+it("memo block is absent for a result without memo in DecisionDetails", () => {
+  render(
+    <DecisionDetails
+      result={{
+        request_id: "R01",
+        decision: "APPROVE_STATISTICAL",
+        articles: ["Art. 53"],
+        reason: "Allowed",
+        answer: null,
+        explanation: { ...explanation },
+      }}
+    />,
+  );
+  expect(
+    screen.queryByText("AI-drafted reasoning memo (quotes verified)"),
+  ).not.toBeInTheDocument();
+});
+
+it("memo block appears in DecisionDetails when result.memo is set", () => {
+  render(
+    <DecisionDetails
+      result={{
+        request_id: "R01",
+        decision: "APPROVE_STATISTICAL",
+        articles: ["Art. 53"],
+        reason: "Allowed",
+        answer: null,
+        explanation: { ...explanation },
+        memo: verifiedMemo,
+      }}
+    />,
+  );
+  expect(
+    screen.getByText("AI-drafted reasoning memo (quotes verified)"),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText(/The request is approved for statistical access/),
+  ).toBeInTheDocument();
+});
+
+it("memo block does not show quotes list when quotes array is empty", () => {
+  const memoNoQuotes: AiMemo = { ...verifiedMemo, quotes: [] };
+  render(<ExplanationPanel explanation={explanation} memo={memoNoQuotes} />);
+  expect(
+    screen.getByText("AI-drafted reasoning memo (quotes verified)"),
+  ).toBeInTheDocument();
+  expect(screen.queryByText(/Verified regulation quotes/)).not.toBeInTheDocument();
+});

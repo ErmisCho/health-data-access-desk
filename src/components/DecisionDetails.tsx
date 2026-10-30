@@ -84,6 +84,7 @@ export function DecisionDetails({
           purpose={request?.purpose}
           question={request?.question}
           approved={result.decision !== "REJECT"}
+          memo={result.memo}
         />
       )}
       {result.population && (

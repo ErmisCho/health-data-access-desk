@@ -1,4 +1,4 @@
-import type { Decision, DecisionResult, TimelineEvent, DecisionDeadline } from "./ehds";
+import type { AiMemo, Decision, DecisionResult, TimelineEvent, DecisionDeadline } from "./ehds";
 import { answerColumns, answerRows, isPercentage, metricLabel, formatValue } from "./answers";
 import type { TranslationKey } from "./i18n";
 
@@ -7,6 +7,8 @@ type TFn = (key: TranslationKey) => string;
 // Default (English) t() — used when createDecisionLetter is called without a translator
 // (e.g. from tests or the PDF builder).
 const EN_STRINGS: Partial<Record<TranslationKey, string>> = {
+  "letter.memo.heading": "AI-drafted reasoning memo (quotes verified)",
+  "letter.memo.label": "AI-drafted",
   "letter.verdict.REJECT": "Request rejected",
   "letter.verdict.APPROVE_STATISTICAL": "Approved for statistical results",
   "letter.verdict.APPROVE_SPE": "Approved for access in a secure processing environment",
@@ -100,6 +102,16 @@ export function createDecisionLetter(
     })),
     legalFallback,
     plan,
+    /** AI reasoning memo — present only when verified. Never sourced from answer/patient data. */
+    memo: result.memo
+      ? {
+          text: result.memo.text,
+          quotes: result.memo.quotes,
+          model: result.memo.model,
+          heading: t("letter.memo.heading"),
+          label: t("letter.memo.label"),
+        }
+      : undefined,
     table: rows.length
       ? {
           headers: [

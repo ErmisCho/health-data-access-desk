@@ -214,6 +214,11 @@ export const en = {
   "explanation.whatWeUnderstood": "What we understood",
   "explanation.planSuffixEn": "",
 
+  // ── AI reasoning memo (Issue #35) ────────────────────────────────────────────
+  "memo.heading": "AI-drafted reasoning memo (quotes verified)",
+  "memo.label": "AI-drafted",
+  "memo.quotesHeading": "Verified regulation quotes",
+
   // ── LegalQuote ───────────────────────────────────────────────────────────────
   "legal.officialLabel": "",
 
@@ -233,7 +238,9 @@ export const en = {
   "letter.conditions.title": "Conditions and next steps",
   "letter.statResults.caption": "Statistical results",
 
-  // ── decision-letter.ts verdicts / conditions ─────────────────────────────────
+  // ── decision-letter.ts verdicts / conditions + memo ─────────────────────────
+  "letter.memo.heading": "AI-drafted reasoning memo (quotes verified)",
+  "letter.memo.label": "AI-drafted",
   "letter.verdict.REJECT": "Request rejected",
   "letter.verdict.APPROVE_STATISTICAL": "Approved for statistical results",
   "letter.verdict.APPROVE_SPE":

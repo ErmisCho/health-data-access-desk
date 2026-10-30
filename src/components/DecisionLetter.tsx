@@ -97,6 +97,25 @@ export function DecisionLetter({ letter }: { letter: Letter }) {
             <p>{letter.legalFallback}</p>
           )}
         </section>
+        {letter.memo && (
+          <section aria-labelledby="letter-memo" className="space-y-3">
+            <h2 id="letter-memo" className="text-xl font-semibold">
+              {letter.memo.heading}
+            </h2>
+            <p className="text-sm text-muted-foreground">({letter.memo.label})</p>
+            <p className="whitespace-pre-wrap">{letter.memo.text}</p>
+            {letter.memo.quotes.length > 0 && (
+              <ul className="space-y-1 text-sm">
+                {letter.memo.quotes.map((q, i) => (
+                  <li key={i}>
+                    <span className="font-mono text-muted-foreground">{q.ref}</span>:{" "}
+                    <q>{q.text}</q>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
+        )}
         <section aria-labelledby="letter-plan" className="space-y-3">
           <h2 id="letter-plan" className="text-xl font-semibold">
             {t("letter.plan.title")}

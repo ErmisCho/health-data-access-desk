@@ -1,4 +1,4 @@
-import type { DecisionExplanation } from "@/lib/ehds";
+import type { AiMemo, DecisionExplanation } from "@/lib/ehds";
 import { LegalQuote } from "./LegalQuote";
 import type { ReactNode } from "react";
 import { useLang, useT } from "@/lib/i18n";
@@ -41,11 +41,13 @@ export function ExplanationPanel({
   purpose,
   question,
   approved = true,
+  memo,
 }: {
   explanation: DecisionExplanation;
   purpose?: string | undefined;
   question?: string | undefined;
   approved?: boolean;
+  memo?: AiMemo | undefined;
 }) {
   const t = useT();
   const { lang } = useLang();
@@ -114,6 +116,40 @@ export function ExplanationPanel({
       {explanation.articles.map((article, i) => (
         <LegalQuote key={`${article.number}-${i}`} article={article} />
       ))}
+      {memo && <MemoBlock memo={memo} />}
+    </section>
+  );
+}
+
+function MemoBlock({ memo }: { memo: AiMemo }) {
+  const t = useT();
+  return (
+    <section
+      aria-label={t("memo.heading")}
+      className="mt-4 space-y-2 rounded-md border border-border bg-muted/40 p-3 text-sm"
+    >
+      <h4 className="font-semibold">
+        {t("memo.heading")}{" "}
+        <span className="text-xs font-normal text-muted-foreground">
+          ({t("memo.label")})
+        </span>
+      </h4>
+      <p className="whitespace-pre-wrap">{memo.text}</p>
+      {memo.quotes.length > 0 && (
+        <details>
+          <summary className="cursor-pointer text-xs text-muted-foreground">
+            {t("memo.quotesHeading")} ({memo.quotes.length})
+          </summary>
+          <ul className="mt-2 space-y-1">
+            {memo.quotes.map((q, i) => (
+              <li key={i} className="text-xs">
+                <span className="font-mono text-muted-foreground">{q.ref}</span>:{" "}
+                <q>{q.text}</q>
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
     </section>
   );
 }

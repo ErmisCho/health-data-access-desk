@@ -220,6 +220,11 @@ export const de: { [K in keyof EnDict]: string } = {
   "explanation.whatWeUnderstood": "So verstehen wir den Antrag",
   "explanation.planSuffixEn": " (Englisch)",
 
+  // ── AI reasoning memo (Issue #35) ────────────────────────────────────────────
+  "memo.heading": "KI-erstelltes Begründungsmemo (Zitate geprüft)",
+  "memo.label": "KI-erstellt",
+  "memo.quotesHeading": "Geprüfte Regulierungszitate",
+
   // ── LegalQuote ───────────────────────────────────────────────────────────────
   "legal.officialLabel":
     "Amtlicher Wortlaut (Englisch), Verordnung (EU) 2025/327",
@@ -241,7 +246,9 @@ export const de: { [K in keyof EnDict]: string } = {
   "letter.conditions.title": "Auflagen und nächste Schritte",
   "letter.statResults.caption": "Statistische Ergebnisse",
 
-  // ── decision-letter.ts verdicts / conditions ─────────────────────────────────
+  // ── decision-letter.ts verdicts / conditions + memo ─────────────────────────
+  "letter.memo.heading": "KI-erstelltes Begründungsmemo (Zitate geprüft)",
+  "letter.memo.label": "KI-erstellt",
   "letter.verdict.REJECT": "Antrag abgelehnt",
   "letter.verdict.APPROVE_STATISTICAL": "Genehmigt für statistische Ergebnisse",
   "letter.verdict.APPROVE_SPE":

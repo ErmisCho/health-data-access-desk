@@ -68,6 +68,17 @@ export interface TimelineEvent {
   at: string;
 }
 
+export interface MemoQuote {
+  text: string;
+  ref: string;
+}
+
+export interface AiMemo {
+  text: string;
+  quotes: MemoQuote[];
+  model: string;
+}
+
 export interface DecisionResult {
   request_id: string;
   decision: Decision;
@@ -82,6 +93,8 @@ export interface DecisionResult {
   population?: { eligible_patients: number };
   timeline?: TimelineEvent[];
   deadline?: DecisionDeadline | null;
+  /** AI-drafted reasoning memo (Issue #35). Present only when verified. */
+  memo?: AiMemo;
 }
 export interface StaffAction {
   request_id: string;
