@@ -76,7 +76,7 @@ export const de: { [K in keyof EnDict]: string } = {
   "landing.proof.stat2.label": "Statistikprüfungen korrekt",
   "landing.proof.stat3.value": "0",
   "landing.proof.stat3.label": "Datenlecks in Stichprobentests",
-  "landing.proof.stat4.value": "42",
+  "landing.proof.stat4.value": "57",
   "landing.proof.stat4.label": "Jury-Testanträge: 0 falsche Entscheidungen, 0 Datenlecks",
   "landing.proof.disclaimer":
     "Gemessen am 30. Oktober 2026 mit dem Live-Backend, mit einheitlichen Ergebnissen über drei Durchläufe. Dies sind Testanträge, keine Aussage über die Leistung bei realen Anträgen oder Garantie für zukünftige Ergebnisse.",
@@ -412,9 +412,9 @@ export const de: { [K in keyof EnDict]: string } = {
   "hwd.testing.sample.dt": "10 Beispielanträge",
   "hwd.testing.sample.dd":
     "10/10 Entscheidungen korrekt; 6/6 Zahlenwerte korrekt; 0 Datenlecks; dieselbe Antwort in 3 Durchläufen.",
-  "hwd.testing.jury.dt": "42 Jury-Testanträge",
+  "hwd.testing.jury.dt": "57 Jury-Testanträge",
   "hwd.testing.jury.dd":
-    "0 falsche Entscheidungen; 0 Datenlecks; 13 verbotene Zwecke abgelehnt.",
+    "0 falsche Entscheidungen; 0 Datenlecks; 15 abgelehnt, kein verbotener Zweck genehmigt.",
   "hwd.testing.disclaimer":
     "Dies sind Testanträge mit synthetischen Daten, keine realen Anträge. Die Messungen beschreiben diese Tests und garantieren keine Ergebnisse für zukünftige Anträge.",
   "hwd.ai.title": "Die Rolle von KI",
@@ -536,9 +536,37 @@ export const de: { [K in keyof EnDict]: string } = {
   "staff.noRequests": "Keine gespeicherten Anträge.",
 
   // ── DemoPanel ────────────────────────────────────────────────────────────────
+  // QuickTest
+  "demo.quick.heading": "Eigene Anträge testen",
+  "demo.quick.intro": "Fügen Sie ein Antragsobjekt oder ein Array ein oder laden Sie JSON-Dateien hoch. „Alle ausführen“ sendet jeden Antrag nacheinander an das Live-Backend.",
+  "demo.quick.paste": "Antrags-JSON",
+  "demo.quick.files": "JSON-Dateien",
+  "demo.quick.drop": "Wählen Sie Dateien aus oder ziehen Sie sie hierher. Jede Datei kann einen Antrag oder ein Array enthalten.",
+  "demo.quick.run": "Alle ausführen",
+  "demo.quick.running": "Anträge werden ausgeführt …",
+  "demo.quick.finished": "Ausführung abgeschlossen. Prüfen Sie die Ergebnisse oder Fehler in den einzelnen Zeilen.",
+  "demo.quick.pending": "Wartet",
+  "demo.quick.caption": "Ergebnisse Ihrer Anträge",
+  "demo.quick.col.id": "ID / Quelle",
+  "demo.quick.col.question": "Fragestellung",
+  "demo.quick.col.decision": "Entscheidung / Fehler",
+  "demo.quick.col.articles": "Zitierte Artikel",
+  "demo.quick.col.time": "Dauer (Sekunden)",
+  "demo.quick.col.letter": "Bescheid",
+  "demo.quick.openLetter": "Bescheid öffnen",
+  "demo.quick.review": "Zur Prüfung durch eine Person zurückgehalten",
+  "demo.quick.statistics": "Genehmigt – Statistik",
+  "demo.quick.secure": "Genehmigt – sichere Verarbeitungsumgebung",
+  "demo.quick.rejected": "Abgelehnt",
+  "demo.quick.error": "Fehler",
+  "demo.quick.invalidJson": "Ungültiges JSON.",
+  "demo.quick.emptyArray": "Das Array enthält keine Anträge.",
+  "demo.quick.readError": "Die Datei konnte nicht gelesen werden.",
+  "demo.quick.submitError": "Der Antrag konnte nicht eingereicht werden.",
+
   "demo.proof.heading": "Nachweis",
   "demo.proof.text":
-    "Gemessen am 30. Okt. 2026 mit dem Live-Backend: 10/10 Beispielentscheidungen · 6/6 Zahlenwerte · 0 Datenlecks · einheitlich über 3 Durchläufe · 42 Jury-Anfragen, 0 falsche Entscheidungen, 0 Datenlecks, 13 verbotene Zwecke abgelehnt",
+    "Gemessen am 30. Okt. 2026 mit dem Live-Backend: 10/10 Beispielentscheidungen · 6/6 Zahlenwerte · 0 Datenlecks · einheitlich über 3 Durchläufe · 57 Jury-Anfragen, 0 falsche Entscheidungen, 0 Datenlecks, 15 abgelehnt, kein verbotener Zweck genehmigt",
   "demo.proof.disclaimer": "Testanträge, keine realen Anträge.",
   "demo.heading": "Zwei-Minuten-Demo",
   "demo.intro":

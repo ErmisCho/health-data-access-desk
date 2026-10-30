@@ -122,7 +122,7 @@ it("offers the seven scenarios in presentation order without fetching on mount",
   expect(invoke).not.toHaveBeenCalled();
   const proof = screen.getByRole("region", { name: "Proof" });
   expect(proof).toHaveTextContent(
-    "Measured 30 Oct 2026 against the live backend: 10/10 sample decisions · 6/6 numbers · 0 leaks · consistent over 3 runs · 42 jury requests, 0 wrong decisions, 0 leaks, 13 prohibited purposes rejected",
+    "Measured 30 Oct 2026 against the live backend: 10/10 sample decisions · 6/6 numbers · 0 leaks · consistent over 3 runs · 57 jury requests, 0 wrong decisions, 0 leaks, 15 rejected, no prohibited purpose approved",
   );
   expect(proof).toHaveTextContent("Test requests, not real applications.");
 });
@@ -216,7 +216,7 @@ it("disables all scenarios while pending to prevent overlapping results", async 
   fireEvent.click(screen.getByRole("button", { name: /Statistics with numbers/ }));
   for (const button of screen.getAllByRole("button")) expect(button).toBeDisabled();
   resolve({ data: base, error: null });
-  await waitFor(() => expect(screen.getAllByRole("button")[0]).toBeEnabled());
+  await waitFor(() => expect(screen.getByRole("button", { name: /Statistics with numbers/ })).toBeEnabled());
 });
 
 it.each([500, 200])(

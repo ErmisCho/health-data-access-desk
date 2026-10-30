@@ -6,8 +6,9 @@ import {
   createRouter,
   RouterProvider,
 } from "@tanstack/react-router";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { LandingPage } from "./LandingPage";
+import { PreferencesProvider } from "@/lib/preferences";
 
 async function renderLanding() {
   const root = createRootRoute();
@@ -20,13 +21,29 @@ async function renderLanding() {
     history: createMemoryHistory({ initialEntries: ["/"] }),
   });
   await router.load();
-  render(<RouterProvider router={router} />);
+  render(<PreferencesProvider><RouterProvider router={router} /></PreferencesProvider>);
   await screen.findByRole("heading", { name: "Can this health-data request be approved?" });
 }
 
-afterEach(cleanup);
+afterEach(() => { cleanup(); localStorage.clear(); });
+// Skip the first-visit settings dialog, which would hide the page from role queries.
+beforeEach(() => localStorage.setItem("ehds-setup-complete", "true"));
 
 describe("Landing page", () => {
+  it("opens the desk in demo mode for custom requests", async () => {
+    await renderLanding();
+    const action = screen.getByRole("link", { name: "Test your own requests" });
+    expect(action).toHaveAttribute("href", "/desk");
+    fireEvent.click(action);
+    expect(localStorage.getItem("ehds-role")).toBe("demo");
+  });
+
+  it("shows 57 jury test requests with the honest limits", async () => {
+    await renderLanding();
+    const tile = screen.getByText("jury test requests: 0 wrong decisions, 0 leaks").parentElement!;
+    expect(tile).toHaveTextContent("57");
+    expect(screen.getByText(/a guarantee of future results/i)).toBeInTheDocument();
+  });
   it("links the hero actions to the desk and transparency pages", async () => {
     await renderLanding();
     expect(screen.getByRole("link", { name: "Submit a request" })).toHaveAttribute("href", "/desk");

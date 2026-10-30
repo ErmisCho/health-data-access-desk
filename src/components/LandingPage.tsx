@@ -84,6 +84,11 @@ export function LandingPage() {
                   {t("landing.cta.submit")} <ArrowRight aria-hidden="true" />
                 </Link>
               </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link to="/desk" onClick={() => setRole("demo")}>
+                  {t("demo.quick.heading")}
+                </Link>
+              </Button>
               <Link
                 to="/examples"
                 className="inline-flex min-h-11 items-center text-sm font-medium text-primary underline underline-offset-4"

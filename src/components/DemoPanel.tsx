@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { QuickTest } from "./QuickTest";
 import { downloadRequest, SAMPLE_ENTRIES, submitRequest, type DecisionResult } from "@/lib/ehds";
 import { answerRows } from "@/lib/answers";
 import { DecisionDetails } from "./DecisionDetails";
@@ -94,6 +95,7 @@ export function DemoPanel() {
     outcome && SAMPLE_ENTRIES.find((entry) => entry.id === outcome.scenario.id)?.request;
   return (
     <div className="space-y-6">
+      <QuickTest />
       <section aria-label={t("demo.proof.heading")} className="rounded border border-border bg-muted p-4">
         <h2 className="font-display text-lg font-semibold">{t("demo.proof.heading")}</h2>
         <p className="mt-2 font-mono text-sm">{t("demo.proof.text")}</p>

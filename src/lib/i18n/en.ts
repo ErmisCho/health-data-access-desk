@@ -87,7 +87,7 @@ export const en = {
   "landing.proof.stat2.label": "statistics checks correct",
   "landing.proof.stat3.value": "0",
   "landing.proof.stat3.label": "leaks in sample tests",
-  "landing.proof.stat4.value": "42",
+  "landing.proof.stat4.value": "57",
   "landing.proof.stat4.label": "jury test requests: 0 wrong decisions, 0 leaks",
   "landing.proof.disclaimer":
     "Measured on 30 October 2026 against the live backend, with consistent results over three runs. These are test requests, not evidence of performance on all real-world requests or a guarantee of future results.",
@@ -399,9 +399,9 @@ export const en = {
   "hwd.testing.sample.dt": "10 sample requests",
   "hwd.testing.sample.dd":
     "10/10 decisions correct; 6/6 numeric answers correct; 0 leaks; the same answer on 3 runs.",
-  "hwd.testing.jury.dt": "42 jury test requests",
+  "hwd.testing.jury.dt": "57 jury test requests",
   "hwd.testing.jury.dd":
-    "0 wrong decisions; 0 leaks; 13 prohibited purposes rejected.",
+    "0 wrong decisions; 0 leaks; 15 rejected, no prohibited purpose approved.",
   "hwd.testing.disclaimer":
     "These are test requests on synthetic data, not real applications. The measurements describe these tests and do not guarantee outcomes for future requests.",
   "hwd.ai.title": "The role of AI",
@@ -521,9 +521,37 @@ export const en = {
   "staff.noRequests": "No saved requests.",
 
   // ── DemoPanel ────────────────────────────────────────────────────────────────
+  // QuickTest
+  "demo.quick.heading": "Test your own requests",
+  "demo.quick.intro": "Paste one request object or an array, or upload JSON files. Run all sends each request to the live backend, one after another.",
+  "demo.quick.paste": "Request JSON",
+  "demo.quick.files": "JSON files",
+  "demo.quick.drop": "Choose files or drop them here. Each file may contain one request or an array.",
+  "demo.quick.run": "Run all",
+  "demo.quick.running": "Running requests…",
+  "demo.quick.finished": "Run complete. Check each row for its result or error.",
+  "demo.quick.pending": "Waiting",
+  "demo.quick.caption": "Your request results",
+  "demo.quick.col.id": "ID / source",
+  "demo.quick.col.question": "Question",
+  "demo.quick.col.decision": "Decision / error",
+  "demo.quick.col.articles": "Cited articles",
+  "demo.quick.col.time": "Time (seconds)",
+  "demo.quick.col.letter": "Letter",
+  "demo.quick.openLetter": "Open letter",
+  "demo.quick.review": "Held for a person",
+  "demo.quick.statistics": "Approved – statistics",
+  "demo.quick.secure": "Approved – secure environment",
+  "demo.quick.rejected": "Rejected",
+  "demo.quick.error": "Error",
+  "demo.quick.invalidJson": "Invalid JSON.",
+  "demo.quick.emptyArray": "The array contains no requests.",
+  "demo.quick.readError": "The file could not be read.",
+  "demo.quick.submitError": "The request could not be submitted.",
+
   "demo.proof.heading": "Proof",
   "demo.proof.text":
-    "Measured 30 Oct 2026 against the live backend: 10/10 sample decisions · 6/6 numbers · 0 leaks · consistent over 3 runs · 42 jury requests, 0 wrong decisions, 0 leaks, 13 prohibited purposes rejected",
+    "Measured 30 Oct 2026 against the live backend: 10/10 sample decisions · 6/6 numbers · 0 leaks · consistent over 3 runs · 57 jury requests, 0 wrong decisions, 0 leaks, 15 rejected, no prohibited purpose approved",
   "demo.proof.disclaimer": "Test requests, not real applications.",
   "demo.heading": "Two-minute demo",
   "demo.intro":
